@@ -27,18 +27,37 @@ enum Commands {
 fn main() -> Result<()> {
     let storage = Box::new(InMemoryStorage::new());
     let mut app = App::new(storage);
-    let cli = Cli::parse();
+    dotenvy::dotenv().ok();
 
-    match cli.command {
-        Commands::Help => {
-            print_help();
-            Ok(())
+    match Cli::parse().command {
+        Commands::Help => print_help(),
+        Commands::Fetch => {
+            let items = app.fetch_items()?;
+            println!("Fetched {} item(s).", items.len());
         }
-        Commands::Fetch => cmd_fetch(&mut app),
-        Commands::Digest => cmd_digest(&app),
-        Commands::Daily => cmd_daily(&app),
-        Commands::Config => cmd_config(&app),
+        Commands::Digest => {
+            app.digest_items(&[])?;
+        }
+        Commands::Daily => {
+            let items = app.get_daily_items()?;
+            if items.is_empty() {
+                println!("No items. Run `br1ef fetch` first.");
+            } else {
+                for item in &items {
+                    println!("───");
+                    println!("From:    {}", item.from);
+                    println!("Subject: {}", item.title);
+                }
+                println!("───");
+                println!("{} item(s).", items.len());
+            }
+        }
+        Commands::Config => {
+            app.configure()?;
+        }
     }
+
+    Ok(())
 }
 
 fn print_help() {
@@ -58,41 +77,4 @@ fn print_help() {
     println!("  2. Run `br1ef fetch` then `br1ef daily` to see your digest");
     println!();
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
-}
-
-fn cmd_fetch(app: &mut App) -> Result<()> {
-    dotenvy::dotenv().ok();
-    let items = app.fetch_items()?;
-    println!("Fetched {} item(s).", items.len());
-    Ok(())
-}
-
-fn cmd_digest(app: &App) -> Result<()> {
-    app.digest_items(&[])?;
-    Ok(())
-}
-
-fn cmd_daily(app: &App) -> Result<()> {
-    let items = app.get_daily_items()?;
-
-    if items.is_empty() {
-        println!("No items. Run `br1ef fetch` first.");
-        return Ok(());
-    }
-
-    for item in &items {
-        println!("───");
-        println!("From:    {}", item.from);
-        println!("Subject: {}", item.title);
-    }
-
-    println!("───");
-    println!("{} item(s).", items.len());
-
-    Ok(())
-}
-
-fn cmd_config(app: &App) -> Result<()> {
-    app.configure()?;
-    Ok(())
 }
