@@ -43,8 +43,11 @@ If you can't describe how to validate a step, the plan isn't complete.
 ## Rules
 
 - **Never skip Challenge phase** — if you're about to implement, first challenge.
+- **All changes go through pull requests** — create a branch, push, open a PR, get it reviewed and merged. Never push directly to main.
 - **One concept per commit** — keep changes small and reviewable.
 - **Update PLAN.md as you go** — check off items, note blockers.
+- **Follow software engineering best practices** — write tests, handle errors, validate inputs, keep functions small, prefer clarity over cleverness.
+- **Never commit PII** — no real email addresses, passwords, tokens, API keys, or personal data in source code. Use `.env` for secrets, `.env.example` for templates.
 - **No comments unless WHY is non-obvious** — never restate code, never narrate plans.
 - **Lean over clever** — less code is better than more abstraction.
 - **Match existing patterns** — naming, file structure, imports, idioms.
