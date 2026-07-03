@@ -43,7 +43,8 @@ If you can't describe how to validate a step, the plan isn't complete.
 ## Rules
 
 - **Never skip Challenge phase** — if you're about to implement, first challenge.
-- **All changes go through pull requests** — create a branch, push, open a PR, get it reviewed and merged. Never push directly to main.
+- **Every change starts with a branch** — before writing any code, run `git checkout -b <feature-name>`. Never commit to main. Never push to main.
+- **Every change ends with a PR** — after commits, run `gh pr create`, get it reviewed, then `gh pr merge`. The agent never merges its own PRs unless explicitly told to.
 - **One concept per commit** — keep changes small and reviewable.
 - **Update PLAN.md as you go** — check off items, note blockers.
 - **Follow software engineering best practices** — write tests, handle errors, validate inputs, keep functions small, prefer clarity over cleverness.
