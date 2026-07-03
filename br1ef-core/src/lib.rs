@@ -1,9 +1,14 @@
+mod imap_source;
+
+pub use imap_source::{ImapConfig, ImapSource};
+
 /// A single digest item — an event, email, or notification
 /// fetched from a configured source.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Item {
     pub id: String,
     pub title: String,
+    pub from: String,
     pub body: String,
     pub source: String,
     pub urgent: bool,
@@ -12,7 +17,7 @@ pub struct Item {
 /// A source of digest items.
 pub trait Source {
     fn id(&self) -> &str;
-    fn fetch(&self) -> Vec<Item>;
+    fn fetch(&self) -> anyhow::Result<Vec<Item>>;
 }
 
 #[cfg(test)]
@@ -24,6 +29,7 @@ mod tests {
         let item = Item {
             id: "1".into(),
             title: "test".into(),
+            from: "from".into(),
             body: "body".into(),
             source: "mock".into(),
             urgent: false,

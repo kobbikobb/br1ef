@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 br1ef-core = { path = "../br1ef-core" }
+dotenvy = "0.15"
+anyhow = "1"
