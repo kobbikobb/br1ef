@@ -44,9 +44,7 @@ impl Source for ImapSource {
             .map_err(|e| e.0)
             .context("IMAP login failed")?;
 
-        session
-            .select("INBOX")
-            .context("failed to select INBOX")?;
+        session.select("INBOX").context("failed to select INBOX")?;
 
         let since = Utc::now() - Duration::days(7);
         let since_str = since.format("%d-%b-%Y").to_string();
