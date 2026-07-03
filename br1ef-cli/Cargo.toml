@@ -5,5 +5,6 @@ edition = "2024"
 
 [dependencies]
 br1ef-core = { path = "../br1ef-core" }
+clap = { version = "4", features = ["derive"] }
 dotenvy = "0.15"
 anyhow = "1"
