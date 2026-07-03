@@ -1,4 +1,5 @@
 mod imap_source;
+pub mod service;
 
 pub use imap_source::{ImapConfig, ImapSource};
 
