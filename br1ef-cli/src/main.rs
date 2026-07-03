@@ -1,5 +1,6 @@
 use anyhow::Result;
 use br1ef_core::service;
+use br1ef_core::storage::InMemoryStorage;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -24,6 +25,7 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
+    let mut storage = InMemoryStorage::new();
     let cli = Cli::parse();
 
     match cli.command {
@@ -31,9 +33,9 @@ fn main() -> Result<()> {
             print_help();
             Ok(())
         }
-        Commands::Fetch => cmd_fetch(),
+        Commands::Fetch => cmd_fetch(&mut storage),
         Commands::Digest => cmd_digest(),
-        Commands::Daily => cmd_daily(),
+        Commands::Daily => cmd_daily(&storage),
         Commands::Config => cmd_config(),
     }
 }
@@ -52,13 +54,15 @@ fn print_help() {
     println!();
     println!("Setup:");
     println!("  1. Copy .env.example to .env and fill in your IMAP credentials");
-    println!("  2. Run `br1ef daily` to fetch and display your morning digest");
+    println!("  2. Run `br1ef fetch` then `br1ef daily` to see your digest");
     println!();
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
 }
 
-fn cmd_fetch() -> Result<()> {
-    service::fetch_items()?;
+fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
+    dotenvy::dotenv().ok();
+    let items = service::fetch_items(storage)?;
+    println!("Fetched {} item(s).", items.len());
     Ok(())
 }
 
@@ -67,13 +71,11 @@ fn cmd_digest() -> Result<()> {
     Ok(())
 }
 
-fn cmd_daily() -> Result<()> {
-    dotenvy::dotenv().ok();
-
-    let items = service::get_daily_items()?;
+fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
+    let items = service::get_daily_items(storage)?;
 
     if items.is_empty() {
-        println!("No email in the last week.");
+        println!("No items. Run `br1ef fetch` first.");
         return Ok(());
     }
 
@@ -84,7 +86,7 @@ fn cmd_daily() -> Result<()> {
     }
 
     println!("───");
-    println!("{} email(s) in the last week.", items.len());
+    println!("{} item(s).", items.len());
 
     Ok(())
 }
