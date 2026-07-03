@@ -43,6 +43,7 @@ If you can't describe how to validate a step, the plan isn't complete.
 ## Rules
 
 - **Never skip Challenge phase** — if you're about to implement, first challenge.
+- **After a merge, reset to main** — when told a PR is merged, immediately do: `git checkout main && git pull`. Never keep working from a stale or merged branch.
 - **Every change starts with a branch** — before writing any code, run `git checkout -b <feature-name>`. Never commit to main. Never push to main.
 - **Every change ends with a PR** — after commits, run `gh pr create`, get it reviewed, then `gh pr merge`. The agent never merges its own PRs unless explicitly told to.
 - **One concept per commit** — keep changes small and reviewable.
