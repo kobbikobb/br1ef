@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["br1ef-core", "br1ef-cli"]
