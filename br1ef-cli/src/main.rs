@@ -34,7 +34,8 @@ fn main() -> Result<()> {
         println!("From:    {}", item.from);
         println!("Subject: {}", item.title);
         println!();
-        println!("{}", item.body);
+        let snippet: String = item.body.chars().take(50).collect();
+        println!("{}", snippet);
     }
 
     println!("───");
