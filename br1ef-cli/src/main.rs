@@ -1,7 +1,5 @@
-use std::env;
-
-use anyhow::{Context, Result};
-use br1ef_core::{ImapConfig, ImapSource, Source};
+use anyhow::Result;
+use br1ef_core::service;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -21,6 +19,8 @@ enum Commands {
     Digest,
     /// Show the daily brief
     Daily,
+    /// Configure br1ef preferences
+    Config,
 }
 
 fn main() -> Result<()> {
@@ -34,6 +34,7 @@ fn main() -> Result<()> {
         Commands::Fetch => cmd_fetch(),
         Commands::Digest => cmd_digest(),
         Commands::Daily => cmd_daily(),
+        Commands::Config => cmd_config(),
     }
 }
 
@@ -43,10 +44,11 @@ fn print_help() {
     println!("Usage: br1ef <command>");
     println!();
     println!("Commands:");
-    println!("  help     Show this usage guide");
     println!("  fetch    Fetch raw data from configured sources");
     println!("  digest   Digest fetched data into a brief");
     println!("  daily    Show the daily brief");
+    println!("  config   Configure br1ef preferences");
+    println!("  help     Show this usage guide");
     println!();
     println!("Setup:");
     println!("  1. Copy .env.example to .env and fill in your IMAP credentials");
@@ -56,33 +58,19 @@ fn print_help() {
 }
 
 fn cmd_fetch() -> Result<()> {
-    anyhow::bail!("not implemented yet")
+    service::fetch_items()?;
+    Ok(())
 }
 
 fn cmd_digest() -> Result<()> {
-    anyhow::bail!("not implemented yet")
+    service::digest_items(&[])?;
+    Ok(())
 }
 
 fn cmd_daily() -> Result<()> {
     dotenvy::dotenv().ok();
 
-    let host = env::var("IMAP_HOST").context("IMAP_HOST not set")?;
-    let port: u16 = env::var("IMAP_PORT")
-        .unwrap_or_else(|_| "993".into())
-        .parse()
-        .context("IMAP_PORT must be a number")?;
-    let username = env::var("IMAP_USERNAME").context("IMAP_USERNAME not set")?;
-    let password = env::var("IMAP_PASSWORD").context("IMAP_PASSWORD not set")?;
-
-    let config = ImapConfig {
-        host,
-        port,
-        username,
-        password,
-    };
-
-    let source = ImapSource::new(config);
-    let items = source.fetch()?;
+    let items = service::get_daily_items()?;
 
     if items.is_empty() {
         println!("No email in the last week.");
@@ -98,5 +86,10 @@ fn cmd_daily() -> Result<()> {
     println!("───");
     println!("{} email(s) in the last week.", items.len());
 
+    Ok(())
+}
+
+fn cmd_config() -> Result<()> {
+    service::configure()?;
     Ok(())
 }
