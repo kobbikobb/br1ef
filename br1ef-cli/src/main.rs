@@ -17,8 +17,8 @@ enum Commands {
     Help,
     /// Fetch raw data from configured sources
     Fetch,
-    /// Analyze fetched data and build a brief
-    Analyze,
+    /// Digest fetched data into a brief
+    Digest,
     /// Show the daily brief
     Daily,
 }
@@ -32,7 +32,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         Commands::Fetch => cmd_fetch(),
-        Commands::Analyze => cmd_analyze(),
+        Commands::Digest => cmd_digest(),
         Commands::Daily => cmd_daily(),
     }
 }
@@ -45,7 +45,7 @@ fn print_help() {
     println!("Commands:");
     println!("  help     Show this usage guide");
     println!("  fetch    Fetch raw data from configured sources");
-    println!("  analyze  Analyze fetched data and build a brief");
+    println!("  digest   Digest fetched data into a brief");
     println!("  daily    Show the daily brief");
     println!();
     println!("Setup:");
@@ -59,7 +59,7 @@ fn cmd_fetch() -> Result<()> {
     anyhow::bail!("not implemented yet")
 }
 
-fn cmd_analyze() -> Result<()> {
+fn cmd_digest() -> Result<()> {
     anyhow::bail!("not implemented yet")
 }
 
