@@ -1,6 +1,5 @@
 use anyhow::Result;
 use br1ef_core::service;
-use br1ef_core::storage::InMemoryStorage;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -25,7 +24,6 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
-    let mut storage = InMemoryStorage::new();
     let cli = Cli::parse();
 
     match cli.command {
@@ -33,9 +31,9 @@ fn main() -> Result<()> {
             print_help();
             Ok(())
         }
-        Commands::Fetch => cmd_fetch(&mut storage),
+        Commands::Fetch => cmd_fetch(),
         Commands::Digest => cmd_digest(),
-        Commands::Daily => cmd_daily(&storage),
+        Commands::Daily => cmd_daily(),
         Commands::Config => cmd_config(),
     }
 }
@@ -59,9 +57,9 @@ fn print_help() {
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
 }
 
-fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
+fn cmd_fetch() -> Result<()> {
     dotenvy::dotenv().ok();
-    let items = service::fetch_items(storage)?;
+    let items = service::fetch_items()?;
     println!("Fetched {} item(s).", items.len());
     Ok(())
 }
@@ -71,8 +69,8 @@ fn cmd_digest() -> Result<()> {
     Ok(())
 }
 
-fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
-    let items = service::get_daily_items(storage)?;
+fn cmd_daily() -> Result<()> {
+    let items = service::get_daily_items()?;
 
     if items.is_empty() {
         println!("No items. Run `br1ef fetch` first.");
