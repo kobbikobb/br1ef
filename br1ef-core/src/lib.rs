@@ -1,7 +1,6 @@
-mod imap_source;
+pub mod fetcher;
 pub mod service;
-
-pub use imap_source::{ImapConfig, ImapSource};
+pub mod storage;
 
 /// A single digest item — an event, email, or notification
 /// fetched from a configured source.
