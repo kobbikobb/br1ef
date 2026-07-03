@@ -11,5 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal
-      - run: cargo check --workspace
+      - run: cargo build --workspace
+      - run: cargo clippy --workspace -- -D warnings
       - run: cargo test --workspace
