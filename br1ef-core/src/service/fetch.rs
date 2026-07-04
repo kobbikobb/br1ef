@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 
+use crate::Item;
 use crate::fetcher;
 use crate::storage::Storage;
 
@@ -46,5 +47,3 @@ pub fn fetch_items(storage: &mut dyn Storage) -> Result<Vec<Item>> {
     storage.store_items(&all_items)?;
     Ok(all_items)
 }
-
-use crate::Item;

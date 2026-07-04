@@ -200,4 +200,64 @@ mod tests {
         let subject = find_header(&parsed, "Subject");
         assert_eq!(subject.as_deref(), Some("Hello there"));
     }
+
+    #[test]
+    fn extract_html_only_body() {
+        let raw = b"From: test@example.com\r\nSubject: test\r\nContent-Type: text/html\r\n\r\n<html><body>hello</body></html>";
+        let parsed = mailparse::parse_mail(raw).unwrap();
+
+        let body = extract_body(&parsed);
+
+        assert_eq!(body, "<html><body>hello</body></html>");
+    }
+
+    #[test]
+    fn extract_body_no_content() {
+        let raw = b"From: test@example.com\r\nSubject: test\r\n\r\n";
+        let parsed = mailparse::parse_mail(raw).unwrap();
+
+        let body = extract_body(&parsed);
+
+        assert_eq!(body, "");
+    }
+
+    #[test]
+    fn extract_body_empty_multipart() {
+        let raw = b"From: test@example.com\r\nSubject: test\r\nContent-Type: multipart/alternative; boundary=foo\r\n\r\n--foo\r\nContent-Type: text/plain\r\n\r\n\r\n--foo--";
+        let parsed = mailparse::parse_mail(raw).unwrap();
+
+        let body = extract_body(&parsed);
+
+        assert_eq!(body.trim(), "");
+    }
+
+    #[test]
+    fn extract_body_falls_back_to_html_when_no_plain_text() {
+        let raw = b"From: test@example.com\r\nSubject: test\r\nContent-Type: multipart/alternative; boundary=foo\r\n\r\n--foo\r\nContent-Type: text/html\r\n\r\n<html><body>fallback</body></html>\r\n--foo--";
+        let parsed = mailparse::parse_mail(raw).unwrap();
+
+        let body = extract_body(&parsed);
+
+        assert_eq!(body.trim(), "<html><body>fallback</body></html>");
+    }
+
+    #[test]
+    fn extract_body_nested_multipart() {
+        let raw = b"From: test@example.com\r\nSubject: test\r\nContent-Type: multipart/mixed; boundary=outer\r\n\r\n--outer\r\nContent-Type: multipart/alternative; boundary=inner\r\n\r\n--inner\r\nContent-Type: text/plain\r\n\r\nnested plain\r\n--inner--\r\n--outer--";
+        let parsed = mailparse::parse_mail(raw).unwrap();
+
+        let body = extract_body(&parsed);
+
+        assert!(body.contains("nested plain"));
+    }
+
+    #[test]
+    fn find_header_is_case_insensitive() {
+        let raw = b"From: test@example.com\r\nMessage-Id: <abc123@example.com>\r\n\r\nbody";
+        let parsed = mailparse::parse_mail(raw).unwrap();
+
+        let result = find_header(&parsed, "message-id");
+
+        assert_eq!(result.as_deref(), Some("<abc123@example.com>"));
+    }
 }
