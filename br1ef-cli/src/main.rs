@@ -1,5 +1,6 @@
 use anyhow::Result;
 use br1ef_core::agent::OllamaAgent;
+use br1ef_core::fetcher::ImapFetcher;
 use br1ef_core::service;
 use br1ef_core::storage::SqliteStorage;
 use clap::{Parser, Subcommand};
@@ -68,7 +69,8 @@ fn print_help() {
 
 fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     dotenvy::dotenv().ok();
-    let items = service::fetch_items(storage)?;
+    let fetcher = ImapFetcher::from_env()?;
+    let items = service::fetch_items(storage, &fetcher)?;
     println!("Fetched {} item(s).", items.len());
     Ok(())
 }
@@ -114,6 +116,7 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
 
 fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     dotenvy::dotenv().ok();
-    service::configure(storage)?;
+    let fetcher = ImapFetcher::from_env()?;
+    service::configure(storage, &fetcher)?;
     Ok(())
 }
