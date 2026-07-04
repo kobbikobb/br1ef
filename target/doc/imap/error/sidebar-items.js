@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","ParseError"],"struct":["ValidateError"],"type":["Result"]};

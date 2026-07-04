@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["connect","connect_starttls"],"mod":["error","extensions","types"],"struct":["Client","Session"],"trait":["Authenticator"]};

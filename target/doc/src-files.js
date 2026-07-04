@@ -1,2 +1,0 @@
-createSrcSidebar('[["imap",["",[["extensions",[],["idle.rs","mod.rs"]],["types",[],["capabilities.rs","fetch.rs","mailbox.rs","mod.rs","name.rs"]]],["authenticator.rs","client.rs","error.rs","lib.rs","parse.rs"]]]]');
-//{"start":19,"fragment_lengths":[194]}
