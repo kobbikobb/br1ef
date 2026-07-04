@@ -1,3 +1,4 @@
+pub mod agent;
 pub mod fetcher;
 pub mod service;
 pub mod storage;
@@ -19,6 +20,7 @@ pub struct Item {
 pub struct Digest {
     pub total_items: usize,
     pub by_source: Vec<(String, usize)>,
+    pub summary: String,
     pub generated_at: chrono::DateTime<chrono::Utc>,
 }
 

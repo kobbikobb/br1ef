@@ -3,10 +3,17 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::Utc;
 
+use crate::agent::Agent;
 use crate::storage::Storage;
 
-pub fn digest_items(storage: &mut dyn Storage) -> Result<()> {
+pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> {
     let items = storage.get_items()?;
+
+    let summary = if items.is_empty() {
+        "No items to summarize.".to_string()
+    } else {
+        agent.summarize_items(&items)?
+    };
 
     let mut by_source: HashMap<String, usize> = HashMap::new();
     for item in &items {
@@ -19,6 +26,7 @@ pub fn digest_items(storage: &mut dyn Storage) -> Result<()> {
     let digest = crate::Digest {
         total_items: items.len(),
         by_source: by_source_vec,
+        summary,
         generated_at: Utc::now(),
     };
 
