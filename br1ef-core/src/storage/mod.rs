@@ -1,5 +1,7 @@
+mod db;
 mod memory;
 
+pub use db::SqliteStorage;
 pub use memory::InMemoryStorage;
 
 use crate::Item;
