@@ -16,7 +16,10 @@ pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> 
     } else {
         let n = items.len();
         let bytes: usize = items.iter().map(|i| i.body.len()).sum();
-        let words: usize = items.iter().map(|i| i.body.split_whitespace().count()).sum();
+        let words: usize = items
+            .iter()
+            .map(|i| i.body.split_whitespace().count())
+            .sum();
         eprintln!("  Generating digest from {n} item(s) ({bytes} bytes, {words} words)...");
 
         let start = std::time::Instant::now();

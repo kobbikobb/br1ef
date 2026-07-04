@@ -197,10 +197,7 @@ fn strip_html(s: &str) -> String {
                 let closing = format!("</{}", tag_name);
                 while i < len {
                     if chars[i] == '<' {
-                        let rest: String = chars[i + 1..]
-                            .iter()
-                            .take(closing.len())
-                            .collect();
+                        let rest: String = chars[i + 1..].iter().take(closing.len()).collect();
                         if rest.to_lowercase() == closing {
                             while i < len && chars[i] != '>' {
                                 i += 1;
