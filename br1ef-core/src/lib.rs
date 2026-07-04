@@ -14,6 +14,14 @@ pub struct Item {
     pub urgent: bool,
 }
 
+/// A digest — a processed summary of fetched items.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Digest {
+    pub total_items: usize,
+    pub by_source: Vec<(String, usize)>,
+    pub generated_at: chrono::DateTime<chrono::Utc>,
+}
+
 /// A source of digest items.
 pub trait Source {
     fn id(&self) -> &str;

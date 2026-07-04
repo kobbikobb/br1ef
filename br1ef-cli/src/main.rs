@@ -34,7 +34,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         Commands::Fetch => cmd_fetch(&mut storage),
-        Commands::Digest => cmd_digest(),
+        Commands::Digest => cmd_digest(&mut storage),
         Commands::Daily => cmd_daily(&storage),
         Commands::Config => cmd_config(),
     }
@@ -54,7 +54,7 @@ fn print_help() {
     println!();
     println!("Setup:");
     println!("  1. Copy .env.example to .env and fill in your IMAP credentials");
-    println!("  2. Run `br1ef fetch` then `br1ef daily` to see your digest");
+    println!("  2. Run `br1ef fetch`, then `br1ef digest`, then `br1ef daily`");
     println!();
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
 }
@@ -66,27 +66,30 @@ fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     Ok(())
 }
 
-fn cmd_digest() -> Result<()> {
-    service::digest_items(&[])?;
+fn cmd_digest(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
+    service::digest_items(storage)?;
+    println!("Digest generated.");
     Ok(())
 }
 
 fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
-    let items = service::get_daily_items(storage)?;
+    let digest = service::get_daily_items(storage)?;
 
-    if items.is_empty() {
-        println!("No items. Run `br1ef fetch` first.");
-        return Ok(());
+    match digest {
+        None => {
+            println!("No digest. Run `br1ef fetch` then `br1ef digest` first.");
+        }
+        Some(d) => {
+            println!("Digest for {}", d.generated_at.format("%B %e, %Y"));
+            println!("{}", "─".repeat(30));
+            println!("Total items: {}", d.total_items);
+            println!();
+            println!("By source:");
+            for (source, count) in &d.by_source {
+                println!("  {source}: {count}");
+            }
+        }
     }
-
-    for item in &items {
-        println!("───");
-        println!("From:    {}", item.from);
-        println!("Subject: {}", item.title);
-    }
-
-    println!("───");
-    println!("{} item(s).", items.len());
 
     Ok(())
 }

@@ -1,15 +1,19 @@
 use anyhow::Result;
 
-use crate::Item;
 use crate::storage::Storage;
+use crate::{Digest, Item};
 
 pub struct InMemoryStorage {
     items: Vec<Item>,
+    digest: Option<Digest>,
 }
 
 impl InMemoryStorage {
     pub fn new() -> Self {
-        Self { items: Vec::new() }
+        Self {
+            items: Vec::new(),
+            digest: None,
+        }
     }
 }
 
@@ -32,5 +36,14 @@ impl Storage for InMemoryStorage {
     fn clear(&mut self) -> Result<()> {
         self.items.clear();
         Ok(())
+    }
+
+    fn store_digest(&mut self, digest: &Digest) -> Result<()> {
+        self.digest = Some(digest.clone());
+        Ok(())
+    }
+
+    fn get_digest(&self) -> Result<Option<Digest>> {
+        Ok(self.digest.clone())
     }
 }
