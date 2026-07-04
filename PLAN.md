@@ -70,6 +70,38 @@ IMAP_PASSWORD=your-app-password
 
 ---
 
+## Milestone: Improve LLM prompt to prevent hallucination
+
+**Goal:** Stop the model from fabricating generic summaries. The prompt must be grounded so the model only uses the provided emails.
+
+### Root cause
+
+`build_prompt` in `ollama.rs`:
+- Body truncated to 80 chars — loses nearly all signal
+- No grounding instruction — model defaults to training data
+- No date context — model doesn't know "today"
+- No output format — model free-associates
+
+### Changes
+
+1. **`ollama.rs` — `build_prompt`**
+   - Increase body truncation: 80 → 500 chars
+   - Add grounding: "Only use the information from the emails listed above"
+   - Add date: `Today is {date}.`
+   - Add format guidance: numbered highlights + calendar items
+   - Add fallback: "If nothing needs attention, say so"
+
+2. **`main.rs` — `cmd_daily` output**
+   - Fix date padding with `%-e`
+   - Remove redundant "Summary:" header
+
+### DoD
+
+- [x] `cargo build` passes
+- [x] `cargo test` passes (57/57, existing tests still pass)
+- [x] `cargo clippy -- -D warnings` clean
+- [x] Prompt text is reviewed and documented
+
 ## Out of scope for v0.1
 
 - OAuth (app passwords / regular IMAP password is fine)

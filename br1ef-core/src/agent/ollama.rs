@@ -53,19 +53,23 @@ fn build_prompt(items: &[Item]) -> String {
             i + 1,
             item.from,
             item.title,
-            truncate(&item.body, 80),
+            truncate(&item.body, 500),
         );
     }
 
+    let today = chrono::Utc::now().format("%B %e, %Y");
+
     format!(
         "You are a personal assistant reviewing today's email.\n\
-         Below are emails from the last week.\n\n\
-         {}\n\
+         Today is {today}.\n\
+         Below are emails from the last week. Only use the information from these\n\
+         emails — do not include anything not present in the emails above.\n\n\
+         {email_list}\n\
          Please provide a brief summary with:\n\
          1. Key highlights — things that need attention\n\
          2. Any events happening today or in the next few days\n\n\
+         If nothing needs attention or there are no actionable items, say so.\n\
          Keep it concise, under 150 words.",
-        email_list
     )
 }
 
