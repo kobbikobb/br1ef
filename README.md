@@ -43,6 +43,13 @@ Most providers **do not** let you use your regular password for IMAP. You need a
 - **Outlook** — enable 2FA, then visit [account.live.com/proofs/AppPassword](https://account.live.com/proofs/AppPassword)
 - **Fastmail / others** — use your regular password (check your provider's docs)
 
+### 4. Install Ollama (for digest)
+
+```bash
+# Install Ollama: https://ollama.com/download
+ollama pull llama3.2:1b
+```
+
 ## Run
 
 ```bash
