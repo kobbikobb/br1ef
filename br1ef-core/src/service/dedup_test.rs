@@ -96,7 +96,10 @@ fn normalize_mixed_prefixes() {
 #[test]
 fn normalize_very_deeply_nested() {
     let subject = (0..100).map(|_| "Re: ").collect::<String>() + "hello";
-    assert_eq!(normalize_subject(&subject), "hello");
+
+    let result = normalize_subject(&subject);
+
+    assert_eq!(result, "hello");
 }
 
 #[test]
@@ -134,6 +137,7 @@ fn normalize_fw_prefix() {
 #[test]
 fn dedup_empty() {
     let result = dedup_threads(vec![]);
+
     assert!(result.is_empty());
 }
 
@@ -147,7 +151,10 @@ fn dedup_single_item() {
         source: "imap".into(),
         urgent: false,
     }];
-    assert_eq!(dedup_threads(items).len(), 1);
+
+    let result = dedup_threads(items);
+
+    assert_eq!(result.len(), 1);
 }
 
 #[test]
@@ -170,7 +177,9 @@ fn dedup_collapses_thread_to_newest() {
             urgent: false,
         },
     ];
+
     let result = dedup_threads(items);
+
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].id, "2");
     assert_eq!(result[0].body, "newest reply");
@@ -196,7 +205,10 @@ fn dedup_keeps_different_senders() {
             urgent: false,
         },
     ];
-    assert_eq!(dedup_threads(items).len(), 2);
+
+    let result = dedup_threads(items);
+
+    assert_eq!(result.len(), 2);
 }
 
 #[test]
@@ -227,7 +239,9 @@ fn dedup_preserves_order() {
             urgent: false,
         },
     ];
+
     let result = dedup_threads(items);
+
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].id, "3");
     assert_eq!(result[1].id, "2");
@@ -253,7 +267,10 @@ fn dedup_all_unique() {
             urgent: false,
         },
     ];
-    assert_eq!(dedup_threads(items).len(), 2);
+
+    let result = dedup_threads(items);
+
+    assert_eq!(result.len(), 2);
 }
 
 #[test]
@@ -268,12 +285,17 @@ fn dedup_many_replies_only_keeps_last() {
             urgent: false,
         })
         .collect();
+
     let result = dedup_threads(items);
+
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].id, "9");
     assert_eq!(result[0].body, "reply 9");
 }
 
+// Email `from` addresses are compared case-sensitively because SMTP allows
+// case in the local-part (`User@` != `user@`). Collapsing would risk losing
+// replies from a legitimate variant sender.
 #[test]
 fn dedup_different_from_casing() {
     let items = vec![
@@ -294,7 +316,10 @@ fn dedup_different_from_casing() {
             urgent: false,
         },
     ];
-    assert_eq!(dedup_threads(items).len(), 2);
+
+    let result = dedup_threads(items);
+
+    assert_eq!(result.len(), 2);
 }
 
 #[test]
@@ -325,7 +350,9 @@ fn dedup_preserves_input_order() {
             urgent: false,
         },
     ];
+
     let result = dedup_threads(items);
+
     assert_eq!(result.len(), 3);
     assert_eq!(result[0].id, "1");
     assert_eq!(result[1].id, "2");

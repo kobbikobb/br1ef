@@ -30,20 +30,3 @@ pub trait Source {
     fn fetch(&self) -> anyhow::Result<Vec<Item>>;
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn item_basics() {
-        let item = Item {
-            id: "1".into(),
-            title: "test".into(),
-            from: "from".into(),
-            body: "body".into(),
-            source: "mock".into(),
-            urgent: false,
-        };
-        assert_eq!(item.title, "test");
-    }
-}
