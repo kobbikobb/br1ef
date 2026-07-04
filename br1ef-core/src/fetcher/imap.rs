@@ -193,35 +193,19 @@ fn strip_tags(s: &str) -> String {
             continue;
         }
 
-            let mut tag_name = String::new();
-            let mut j = i;
-            if j < len && chars[j] == '/' {
-                j += 1;
-            }
-            while j < len && !chars[j].is_whitespace() && chars[j] != '>' {
-                tag_name.push(chars[j].to_ascii_lowercase());
-                j += 1;
-            }
+        i += 1;
+        let tag = read_tag_name(&chars, i, len);
 
-            if tag_name == "style" || tag_name == "script" {
-                let closing = format!("</{}", tag_name);
-                while i < len {
-                    if chars[i] == '<' {
-                        let rest: String = chars[i + 1..].iter().take(closing.len()).collect();
-                        if rest.to_lowercase() == closing {
-                            while i < len && chars[i] != '>' {
-                                i += 1;
-                            }
-                            if i < len {
-                                i += 1;
-                            }
-                            break;
-                        }
-                    }
-                    i += 1;
-                }
-                continue;
+        if tag == "style" || tag == "script" {
+            i = skip_to_closing_tag(&chars, i, len, &tag);
+        } else {
+            while i < len && chars[i] != '>' {
+                i += 1;
             }
+            if i < len {
+                i += 1;
+            }
+        }
     }
 
     out
@@ -382,15 +366,15 @@ mod tests {
 
     #[test]
     fn strip_tags_skips_style_content() {
-        assert_eq!(strip_tags("<style>.foo { color: red; }</style>text"), "text");
+        assert_eq!(
+            strip_tags("<style>.foo { color: red; }</style>text"),
+            "text"
+        );
     }
 
     #[test]
     fn strip_tags_skips_script_content() {
-        assert_eq!(
-            strip_tags("<script>alert('xss')</script>safe"),
-            "safe"
-        );
+        assert_eq!(strip_tags("<script>alert('xss')</script>safe"), "safe");
     }
 
     #[test]
