@@ -4,10 +4,12 @@ use anyhow::Result;
 use chrono::Utc;
 
 use crate::agent::Agent;
+use crate::service::dedup::dedup_threads;
 use crate::storage::Storage;
 
 pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> {
     let items = storage.get_items()?;
+    let items = dedup_threads(items);
 
     let summary = if items.is_empty() {
         "No items to summarize.".to_string()
