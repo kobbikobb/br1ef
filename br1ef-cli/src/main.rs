@@ -80,7 +80,6 @@ fn cmd_digest(
     agent: &dyn br1ef_core::agent::Agent,
 ) -> Result<()> {
     service::digest_items(storage, agent)?;
-    println!("Digest generated.");
     Ok(())
 }
 

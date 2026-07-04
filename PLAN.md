@@ -6,11 +6,32 @@
 
 ## Status
 
-✅ All steps complete.
+### ✅ Milestone: Fetch email and print to screen
 
 ```
 $ cargo build && cargo test && cargo clippy
 ✓ clean build, 4 tests pass, clippy -D warnings clean
+```
+
+### ✅ Milestone: Digest stats and progress timer
+
+**DoD:** `br1ef digest` shows data stats (items, bytes, words) before LLM call and elapsed time after.
+
+```
+  Generating digest from 12 item(s) (8431 bytes, 1382 words)...
+  Digest generated in 3.2s.
+```
+
+- [`br1ef-core/src/service/digest.rs`](br1ef-core/src/service/digest.rs) — stats computed before LLM call, timer wraps the call, output via `eprintln!`
+- [`br1ef-cli/src/main.rs`](br1ef-cli/src/main.rs) — removed redundant `println!("Digest generated.")` (timer output replaces it)
+- [`br1ef-core/src/service/digest_test.rs`](br1ef-core/src/service/digest_test.rs) — 4 tests: empty items, items with summary, agent error propagation, multi-source aggregation
+
+```
+$ cargo test
+✓ 51 tests pass
+
+$ cargo clippy -- -D warnings
+✓ clean
 ```
 
 ## Steps

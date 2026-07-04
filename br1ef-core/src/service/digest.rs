@@ -14,7 +14,17 @@ pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> 
     let summary = if items.is_empty() {
         "No items to summarize.".to_string()
     } else {
-        agent.summarize_items(&items)?
+        let n = items.len();
+        let bytes: usize = items.iter().map(|i| i.body.len()).sum();
+        let words: usize = items.iter().map(|i| i.body.split_whitespace().count()).sum();
+        eprintln!("  Generating digest from {n} item(s) ({bytes} bytes, {words} words)...");
+
+        let start = std::time::Instant::now();
+        let summary = agent.summarize_items(&items)?;
+        let elapsed = start.elapsed();
+
+        eprintln!("  Digest generated in {:.1}s.", elapsed.as_secs_f64());
+        summary
     };
 
     let mut by_source: HashMap<String, usize> = HashMap::new();
@@ -35,3 +45,7 @@ pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> 
     storage.store_digest(&digest)?;
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "digest_test.rs"]
+mod tests;
