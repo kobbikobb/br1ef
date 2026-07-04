@@ -1,6 +1,6 @@
 use anyhow::Result;
 use br1ef_core::service;
-use br1ef_core::storage::InMemoryStorage;
+use br1ef_core::storage::SqliteStorage;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -25,7 +25,7 @@ enum Commands {
 }
 
 fn main() -> Result<()> {
-    let mut storage = InMemoryStorage::new();
+    let mut storage = SqliteStorage::new("br1ef.db")?;
     let cli = Cli::parse();
 
     match cli.command {
