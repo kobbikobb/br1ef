@@ -1,1 +1,4 @@
 *.db
+target/
+Cargo.lock
+.env
