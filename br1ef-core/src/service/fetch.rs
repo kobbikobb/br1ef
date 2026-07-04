@@ -3,6 +3,13 @@ use anyhow::{Context, Result};
 use crate::fetcher;
 use crate::storage::Storage;
 
+fn display_mailbox(name: &str) -> &str {
+    if let Some(cat) = name.strip_prefix("@@CATEGORY@@/") {
+        return cat;
+    }
+    name
+}
+
 pub fn fetch_items(storage: &mut dyn Storage) -> Result<Vec<Item>> {
     let host = std::env::var("IMAP_HOST").context("IMAP_HOST not set")?;
     let port: u16 = std::env::var("IMAP_PORT")
@@ -26,11 +33,14 @@ pub fn fetch_items(storage: &mut dyn Storage) -> Result<Vec<Item>> {
         let items = fetcher::fetch_imap(&host, port, &username, &password, mailbox)
             .with_context(|| format!("failed to fetch from \"{mailbox}\""))?;
 
+        let mut new_count = 0;
         for item in items {
             if seen_ids.insert(item.id.clone()) {
                 all_items.push(item);
+                new_count += 1;
             }
         }
+        eprintln!("  {}: {} new item(s)", display_mailbox(mailbox), new_count);
     }
 
     storage.store_items(&all_items)?;

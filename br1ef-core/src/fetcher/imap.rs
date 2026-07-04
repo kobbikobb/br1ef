@@ -109,13 +109,19 @@ pub fn fetch_imap(
             Err(_) => continue,
         };
 
-        let uid = msg.uid.unwrap_or(0).to_string();
+        let message_id = find_header(&parsed, "Message-ID")
+            .or_else(|| find_header(&parsed, "Message-Id"));
+        let id = message_id.unwrap_or_else(|| {
+            let uid = msg.uid.unwrap_or(0).to_string();
+            let fallback = format!("{select_mailbox}/{uid}");
+            fallback
+        });
         let subject = find_header(&parsed, "Subject").unwrap_or_default();
         let from = find_header(&parsed, "From").unwrap_or_default();
         let body_text = extract_body(&parsed);
 
         items.push(Item {
-            id: format!("{select_mailbox}/{uid}"),
+            id,
             title: subject,
             from,
             body: body_text,
