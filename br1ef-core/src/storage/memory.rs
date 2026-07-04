@@ -6,6 +6,7 @@ use crate::{Digest, Item};
 pub struct InMemoryStorage {
     items: Vec<Item>,
     digest: Option<Digest>,
+    selected_mailboxes: Vec<String>,
 }
 
 impl InMemoryStorage {
@@ -13,6 +14,7 @@ impl InMemoryStorage {
         Self {
             items: Vec::new(),
             digest: None,
+            selected_mailboxes: Vec::new(),
         }
     }
 }
@@ -35,6 +37,15 @@ impl Storage for InMemoryStorage {
 
     fn clear(&mut self) -> Result<()> {
         self.items.clear();
+        Ok(())
+    }
+
+    fn get_selected_mailboxes(&self) -> Result<Vec<String>> {
+        Ok(self.selected_mailboxes.clone())
+    }
+
+    fn set_selected_mailboxes(&mut self, mailboxes: &[String]) -> Result<()> {
+        self.selected_mailboxes = mailboxes.to_vec();
         Ok(())
     }
 

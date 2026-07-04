@@ -32,6 +32,9 @@ impl SqliteStorage {
                 source TEXT NOT NULL,
                 item_count INTEGER NOT NULL,
                 FOREIGN KEY (digest_id) REFERENCES digests(id)
+            );
+            CREATE TABLE IF NOT EXISTS selected_mailboxes (
+                name TEXT PRIMARY KEY
             );",
         )
         .context("failed to create tables")?;
@@ -132,6 +135,35 @@ impl Storage for SqliteStorage {
                 .context("failed to insert digest source")?;
         }
 
+        Ok(())
+    }
+
+    fn get_selected_mailboxes(&self) -> Result<Vec<String>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT name FROM selected_mailboxes ORDER BY name")
+            .context("failed to prepare mailbox select")?;
+        let rows = stmt
+            .query_map([], |row| row.get::<_, String>(0))
+            .context("failed to query mailboxes")?;
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row.context("failed to read mailbox row")?);
+        }
+        Ok(result)
+    }
+
+    fn set_selected_mailboxes(&mut self, mailboxes: &[String]) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM selected_mailboxes", [])
+            .context("failed to clear selected mailboxes")?;
+        let mut stmt = conn
+            .prepare("INSERT INTO selected_mailboxes (name) VALUES (?1)")
+            .context("failed to prepare mailbox insert")?;
+        for m in mailboxes {
+            stmt.execute(rusqlite::params![m])
+                .context("failed to insert mailbox")?;
+        }
         Ok(())
     }
 
