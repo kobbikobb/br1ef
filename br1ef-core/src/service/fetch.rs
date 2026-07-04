@@ -27,14 +27,19 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<V
             .fetch_mailbox(mailbox)
             .with_context(|| format!("failed to fetch from \"{mailbox}\""))?;
 
-        let mut new_count = 0;
-        for item in items {
-            if seen_ids.insert(item.id.clone()) {
-                all_items.push(item);
-                new_count += 1;
-            }
-        }
-        eprintln!("  {}: {} new item(s)", display_mailbox(mailbox), new_count);
+        let total = items.len();
+        let new_count = items
+            .into_iter()
+            .filter(|item| seen_ids.insert(item.id.clone()))
+            .inspect(|item| all_items.push(item.clone()))
+            .count();
+
+        println!(
+            "  {}: {} / {} new",
+            display_mailbox(mailbox),
+            new_count,
+            total,
+        );
     }
 
     storage.store_items(&all_items)?;
