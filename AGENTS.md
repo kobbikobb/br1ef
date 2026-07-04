@@ -59,3 +59,4 @@ If you can't describe how to validate a step, the plan isn't complete.
 - **No comments unless WHY is non-obvious** — never restate code, never narrate plans.
 - **Lean over clever** — less code is better than more abstraction.
 - **Match existing patterns** — naming, file structure, imports, idioms.
+- **Always work in a git worktree under `../worktrees/`** — before starting any new feature or fix, create a worktree: `git worktree add -b <branch-name> ../worktrees/<branch-name> main`. Never work directly in the main repo checkout. This keeps the main checkout clean and allows parallel branches without conflicts. Already-existing worktrees in `../worktrees/` are listed in `git worktree list`.
