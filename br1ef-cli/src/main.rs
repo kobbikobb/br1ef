@@ -110,7 +110,7 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
             println!("No digest. Run `br1ef fetch` then `br1ef digest` first.");
         }
         Some(d) => {
-            println!("Digest for {}", d.generated_at.format("%B %e, %Y"));
+            println!("Digest for {}", d.generated_at.format("%B %-e, %Y"));
             println!("{}", "═".repeat(40));
             println!("Total items: {}", d.total_items);
             println!();
@@ -121,7 +121,6 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
             println!();
             if !d.summary.is_empty() {
                 println!("{}", "─".repeat(40));
-                println!("Summary:");
                 for line in d.summary.lines() {
                     println!("{line}");
                 }

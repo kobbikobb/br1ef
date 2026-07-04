@@ -52,7 +52,7 @@ If you can't describe how to validate a step, the plan isn't complete.
 - **Every change ends with a PR** — after commits, run `gh pr create`, get it reviewed, then `gh pr merge`. The agent never merges its own PRs unless explicitly told to.
 - **One concept per commit** — keep changes small and reviewable.
 - **Update PLAN.md as you go** — check off items, note blockers.
-- **Unit tests are mandatory on all changes** — every new function or non-trivial change must include tests. Use the Challenge phase's sub-agent to identify what to test. Exceptions only for pure renames or formatting-only changes.
+- **Unit tests are mandatory on all changes** — every new function, behavior change, or bug fix must include tests. Use the Challenge phase's sub-agent to identify what to test before writing any implementation code. No exceptions.
 - **Tests must follow Arrange-Act-Assert (AAA) pattern** — structure each test in three clear sections separated by blank lines: arrange inputs, act on the unit under test, assert outcomes. Avoid interleaving setup with assertions.
 - **Unit tests live in a separate file** — for `foo.rs`, create `foo_test.rs` and wire it with `#[cfg(test)] #[path = "foo_test.rs"] mod tests;` in `foo.rs`. Integration tests go in `tests/` at the crate root. Follow Rust conventions for test organization.
 - **Never commit PII** — no real email addresses, passwords, tokens, API keys, or personal data in source code. Use `.env` for secrets, `.env.example` for templates.

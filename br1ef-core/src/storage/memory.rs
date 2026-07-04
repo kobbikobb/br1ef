@@ -1,5 +1,9 @@
 use anyhow::Result;
 
+#[cfg(test)]
+#[path = "memory_test.rs"]
+mod tests;
+
 use crate::storage::Storage;
 use crate::{Digest, Item};
 
@@ -27,7 +31,14 @@ impl Default for InMemoryStorage {
 
 impl Storage for InMemoryStorage {
     fn store_items(&mut self, items: &[Item]) -> Result<()> {
-        self.items = items.to_vec();
+        let existing_ids: std::collections::HashSet<String> =
+            self.items.iter().map(|i| i.id.clone()).collect();
+        for item in items {
+            if existing_ids.contains(&item.id) {
+                continue;
+            }
+            self.items.push(item.clone());
+        }
         Ok(())
     }
 

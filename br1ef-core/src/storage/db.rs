@@ -1,6 +1,10 @@
 use std::sync::Mutex;
 
 use anyhow::{Context, Result};
+
+#[cfg(test)]
+#[path = "db_test.rs"]
+mod tests;
 use rusqlite::Connection;
 
 use crate::storage::Storage;
@@ -52,11 +56,9 @@ impl SqliteStorage {
 impl Storage for SqliteStorage {
     fn store_items(&mut self, items: &[Item]) -> Result<()> {
         let conn = self.conn.lock().unwrap();
-        conn.execute("DELETE FROM items", [])
-            .context("failed to clear items")?;
         let mut stmt = conn
             .prepare(
-                "INSERT INTO items (id, title, \"from\", body, source, urgent)
+                "INSERT OR IGNORE INTO items (id, title, \"from\", body, source, urgent)
                  VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             )
             .context("failed to prepare insert")?;
