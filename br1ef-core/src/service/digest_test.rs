@@ -1,9 +1,9 @@
 use anyhow::Result;
 
+use crate::Item;
 use crate::agent::Agent;
 use crate::storage::InMemoryStorage;
 use crate::storage::Storage;
-use crate::Item;
 
 use super::digest_items;
 
@@ -54,8 +54,22 @@ fn digest_items_with_items_stores_digest_with_correct_summary() {
     let mut storage = InMemoryStorage::new();
     storage
         .store_items(&[
-            Item { id: "1".into(), title: "Meeting".into(), from: "alice@a".into(), body: "hello world".into(), source: "imap".into(), urgent: false },
-            Item { id: "2".into(), title: "Lunch".into(), from: "bob@b".into(), body: "foo bar baz".into(), source: "imap".into(), urgent: false },
+            Item {
+                id: "1".into(),
+                title: "Meeting".into(),
+                from: "alice@a".into(),
+                body: "hello world".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+            Item {
+                id: "2".into(),
+                title: "Lunch".into(),
+                from: "bob@b".into(),
+                body: "foo bar baz".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
         ])
         .unwrap();
     let agent = MockAgent {
@@ -94,10 +108,38 @@ fn digest_items_by_source_aggregates_multiple_sources() {
     let title = "unique";
     storage
         .store_items(&[
-            Item { id: "1".into(), title: format!("{title}-a"), from: "alice@a".into(), body: "a".into(), source: "imap".into(), urgent: false },
-            Item { id: "2".into(), title: format!("{title}-b"), from: "alice@b".into(), body: "b".into(), source: "slack".into(), urgent: false },
-            Item { id: "3".into(), title: format!("{title}-c"), from: "alice@c".into(), body: "c".into(), source: "imap".into(), urgent: false },
-            Item { id: "4".into(), title: format!("{title}-d"), from: "alice@d".into(), body: "d".into(), source: "slack".into(), urgent: false },
+            Item {
+                id: "1".into(),
+                title: format!("{title}-a"),
+                from: "alice@a".into(),
+                body: "a".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+            Item {
+                id: "2".into(),
+                title: format!("{title}-b"),
+                from: "alice@b".into(),
+                body: "b".into(),
+                source: "slack".into(),
+                urgent: false,
+            },
+            Item {
+                id: "3".into(),
+                title: format!("{title}-c"),
+                from: "alice@c".into(),
+                body: "c".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+            Item {
+                id: "4".into(),
+                title: format!("{title}-d"),
+                from: "alice@d".into(),
+                body: "d".into(),
+                source: "slack".into(),
+                urgent: false,
+            },
         ])
         .unwrap();
     let agent = MockAgent {
