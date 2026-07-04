@@ -53,7 +53,7 @@ fn build_prompt(items: &[Item]) -> String {
             i + 1,
             item.from,
             item.title,
-            truncate(&item.body, 200),
+            truncate(&item.body, 80),
         );
     }
 
