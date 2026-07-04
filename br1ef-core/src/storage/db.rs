@@ -104,6 +104,8 @@ impl Storage for SqliteStorage {
 
     fn store_digest(&mut self, digest: &Digest) -> Result<()> {
         let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM digest_sources", [])
+            .context("failed to clear old digest sources")?;
         conn.execute("DELETE FROM digests", [])
             .context("failed to clear old digests")?;
 
