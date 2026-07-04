@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use super::*;
-use crate::fetcher::mock::MockFetcher;
 use crate::fetcher::Fetcher;
+use crate::fetcher::mock::MockFetcher;
 use crate::storage::InMemoryStorage;
 
 /// A fetcher that returns different items per mailbox.
@@ -133,7 +133,10 @@ fn fetch_items_collects_all_unique_items_from_multiple_mailboxes() {
         .unwrap();
 
     let fetcher = MailboxMapFetcher(HashMap::from([
-        ("INBOX".into(), vec![item("1", "Inbox Mail"), item("2", "Inbox Note")]),
+        (
+            "INBOX".into(),
+            vec![item("1", "Inbox Mail"), item("2", "Inbox Note")],
+        ),
         ("Work".into(), vec![item("3", "Work Report")]),
     ]));
 
@@ -158,8 +161,14 @@ fn fetch_items_deduplicates_partial_overlap_across_mailboxes() {
         .unwrap();
 
     let fetcher = MailboxMapFetcher(HashMap::from([
-        ("INBOX".into(), vec![item("1", "Shared"), item("2", "Inbox Only")]),
-        ("Work".into(), vec![item("1", "Shared"), item("3", "Work Only")]),
+        (
+            "INBOX".into(),
+            vec![item("1", "Shared"), item("2", "Inbox Only")],
+        ),
+        (
+            "Work".into(),
+            vec![item("1", "Shared"), item("3", "Work Only")],
+        ),
     ]));
 
     let result = fetch_items(&mut storage, &fetcher);
