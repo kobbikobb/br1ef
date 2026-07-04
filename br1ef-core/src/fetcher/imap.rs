@@ -44,6 +44,7 @@ pub fn list_mailboxes(
     Ok(names)
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn fetch_imap(
     host: &str,
     port: u16,
@@ -174,14 +175,23 @@ fn extract_body(parsed: &ParsedMail) -> String {
 }
 
 fn strip_html(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
+    let s = strip_tags(s);
+    let s = decode_entities(&s);
+    collapse_whitespace(&s)
+}
+
+fn strip_tags(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
     let chars: Vec<char> = s.chars().collect();
     let len = chars.len();
     let mut i = 0;
 
     while i < len {
-        if chars[i] == '<' {
+        if chars[i] != '<' {
+            out.push(chars[i]);
             i += 1;
+            continue;
+        }
 
             let mut tag_name = String::new();
             let mut j = i;
@@ -212,29 +222,53 @@ fn strip_html(s: &str) -> String {
                 }
                 continue;
             }
-
-            while i < len && chars[i] != '>' {
-                i += 1;
-            }
-            if i < len {
-                i += 1;
-            }
-        } else {
-            result.push(chars[i]);
-            i += 1;
-        }
     }
 
-    let decoded = result
-        .replace("&amp;", "&")
+    out
+}
+
+fn read_tag_name(chars: &[char], start: usize, len: usize) -> String {
+    let mut name = String::new();
+    let mut j = start;
+    if j < len && chars[j] == '/' {
+        j += 1;
+    }
+    while j < len && !chars[j].is_whitespace() && chars[j] != '>' {
+        name.push(chars[j].to_ascii_lowercase());
+        j += 1;
+    }
+    name
+}
+
+fn skip_to_closing_tag(chars: &[char], mut i: usize, len: usize, tag: &str) -> usize {
+    let closer = format!("/{}", tag);
+    while i < len {
+        if chars[i] == '<' {
+            let rest: String = chars[i + 1..].iter().take(closer.len()).collect();
+            if rest.to_lowercase() == closer {
+                while i < len && chars[i] != '>' {
+                    i += 1;
+                }
+                return if i < len { i + 1 } else { i };
+            }
+        }
+        i += 1;
+    }
+    i
+}
+
+fn decode_entities(s: &str) -> String {
+    s.replace("&amp;", "&")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
         .replace("&quot;", "\"")
-        .replace("&nbsp;", " ");
+        .replace("&nbsp;", " ")
+}
 
-    let mut out = String::with_capacity(decoded.len());
+fn collapse_whitespace(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
     let mut prev_was_space = false;
-    for c in decoded.chars() {
+    for c in s.chars() {
         if c.is_whitespace() {
             if !prev_was_space {
                 out.push(' ');
@@ -245,7 +279,6 @@ fn strip_html(s: &str) -> String {
             prev_was_space = false;
         }
     }
-
     out.trim().to_string()
 }
 
@@ -335,5 +368,104 @@ mod tests {
         let result = find_header(&parsed, "message-id");
 
         assert_eq!(result.as_deref(), Some("<abc123@example.com>"));
+    }
+
+    #[test]
+    fn strip_tags_removes_basic_html() {
+        assert_eq!(strip_tags("<p>hello</p>"), "hello");
+    }
+
+    #[test]
+    fn strip_tags_keeps_text_between_tags() {
+        assert_eq!(strip_tags("<div>a</div> <span>b</span>"), "a b");
+    }
+
+    #[test]
+    fn strip_tags_skips_style_content() {
+        assert_eq!(strip_tags("<style>.foo { color: red; }</style>text"), "text");
+    }
+
+    #[test]
+    fn strip_tags_skips_script_content() {
+        assert_eq!(
+            strip_tags("<script>alert('xss')</script>safe"),
+            "safe"
+        );
+    }
+
+    #[test]
+    fn strip_tags_empty_input() {
+        assert_eq!(strip_tags(""), "");
+    }
+
+    #[test]
+    fn strip_tags_no_html() {
+        assert_eq!(strip_tags("hello world"), "hello world");
+    }
+
+    #[test]
+    fn strip_tags_self_closing_tag() {
+        assert_eq!(strip_tags("hello<br/>world"), "helloworld");
+    }
+
+    #[test]
+    fn decode_entities_basic() {
+        assert_eq!(decode_entities("a&amp;b"), "a&b");
+        assert_eq!(decode_entities("a&lt;b"), "a<b");
+        assert_eq!(decode_entities("a&gt;b"), "a>b");
+        assert_eq!(decode_entities("&quot;hello&quot;"), "\"hello\"");
+        assert_eq!(decode_entities("a&nbsp;b"), "a b");
+    }
+
+    #[test]
+    fn decode_entities_no_entities() {
+        assert_eq!(decode_entities("plain text"), "plain text");
+    }
+
+    #[test]
+    fn decode_entities_empty_string() {
+        assert_eq!(decode_entities(""), "");
+    }
+
+    #[test]
+    fn collapse_whitespace_collapses_multiple_spaces() {
+        assert_eq!(collapse_whitespace("a    b"), "a b");
+    }
+
+    #[test]
+    fn collapse_whitespace_replaces_newlines_with_space() {
+        assert_eq!(collapse_whitespace("a\nb\nc"), "a b c");
+    }
+
+    #[test]
+    fn collapse_whitespace_replaces_tabs() {
+        assert_eq!(collapse_whitespace("a\t\tb"), "a b");
+    }
+
+    #[test]
+    fn collapse_whitespace_trims_ends() {
+        assert_eq!(collapse_whitespace("  hello  "), "hello");
+    }
+
+    #[test]
+    fn collapse_whitespace_empty_string() {
+        assert_eq!(collapse_whitespace(""), "");
+    }
+
+    #[test]
+    fn collapse_whitespace_whitespace_only() {
+        assert_eq!(collapse_whitespace("   \n  \t  "), "");
+    }
+
+    #[test]
+    fn strip_html_full_pipeline() {
+        let input = "  <html><body><p>hello &amp; goodbye</p></body></html>  ";
+        assert_eq!(strip_html(input), "hello & goodbye");
+    }
+
+    #[test]
+    fn strip_html_with_style_script() {
+        let input = "<style>body{margin:0}</style><p>text</p><script>alert(1)</script>";
+        assert_eq!(strip_html(input), "text");
     }
 }
