@@ -47,7 +47,7 @@ fn fetch_items_defaults_to_inbox_when_no_mailboxes_configured() {
     let result = fetch_items(&mut storage, &fetcher);
 
     assert!(result.is_ok());
-    let items = result.unwrap();
+    let items = result.unwrap().items;
     assert_eq!(items.len(), 1);
     assert_eq!(items[0].title, "Hello");
 }
@@ -73,8 +73,7 @@ fn fetch_items_deduplicates_across_mailboxes() {
     let result = fetch_items(&mut storage, &fetcher);
 
     assert!(result.is_ok());
-    let items = result.unwrap();
-    assert_eq!(items.len(), 1);
+    assert_eq!(result.unwrap().items.len(), 1);
 }
 
 #[test]
@@ -143,9 +142,9 @@ fn fetch_items_collects_all_unique_items_from_multiple_mailboxes() {
     let result = fetch_items(&mut storage, &fetcher);
 
     assert!(result.is_ok());
-    let items = result.unwrap();
-    assert_eq!(items.len(), 3);
-    let mut ids: Vec<&str> = items.iter().map(|i| i.id.as_str()).collect();
+    let result = result.unwrap();
+    assert_eq!(result.items.len(), 3);
+    let mut ids: Vec<&str> = result.items.iter().map(|i| i.id.as_str()).collect();
     ids.sort();
     assert_eq!(ids, vec!["1", "2", "3"]);
 
@@ -174,9 +173,9 @@ fn fetch_items_deduplicates_partial_overlap_across_mailboxes() {
     let result = fetch_items(&mut storage, &fetcher);
 
     assert!(result.is_ok());
-    let items = result.unwrap();
-    assert_eq!(items.len(), 3);
-    let mut ids: Vec<&str> = items.iter().map(|i| i.id.as_str()).collect();
+    let result = result.unwrap();
+    assert_eq!(result.items.len(), 3);
+    let mut ids: Vec<&str> = result.items.iter().map(|i| i.id.as_str()).collect();
     ids.sort();
     assert_eq!(ids, vec!["1", "2", "3"]);
 
@@ -199,9 +198,40 @@ fn fetch_items_returns_empty_when_no_mailboxes_have_items() {
     let result = fetch_items(&mut storage, &fetcher);
 
     assert!(result.is_ok());
-    let items = result.unwrap();
-    assert!(items.is_empty());
+    let result = result.unwrap();
+    assert!(result.items.is_empty());
 
     let stored = storage.get_items().unwrap();
     assert!(stored.is_empty());
+}
+
+#[test]
+fn fetch_items_reports_stats_per_mailbox() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .set_selected_mailboxes(&["INBOX".into(), "Work".into()])
+        .unwrap();
+
+    let fetcher = MailboxMapFetcher(HashMap::from([
+        (
+            "INBOX".into(),
+            vec![item("1", "Shared"), item("2", "Inbox Only")],
+        ),
+        (
+            "Work".into(),
+            vec![item("1", "Shared"), item("3", "Work Only")],
+        ),
+    ]));
+
+    let result = fetch_items(&mut storage, &fetcher);
+
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.per_mailbox.len(), 2);
+    assert_eq!(result.per_mailbox[0].name, "INBOX");
+    assert_eq!(result.per_mailbox[0].total, 2);
+    assert_eq!(result.per_mailbox[0].new, 2);
+    assert_eq!(result.per_mailbox[1].name, "Work");
+    assert_eq!(result.per_mailbox[1].total, 2);
+    assert_eq!(result.per_mailbox[1].new, 1);
 }
