@@ -25,8 +25,16 @@ pub fn configure(storage: &mut dyn Storage) -> Result<()> {
 
     println!("Available mailboxes:\n");
     for (i, name) in all.iter().enumerate() {
-        let marker = if name == "INBOX" { " (always selected)" } else { "" };
-        let suffix = if name.starts_with(CATEGORY_PREFIX) { " (category)" } else { "" };
+        let marker = if name == "INBOX" {
+            " (always selected)"
+        } else {
+            ""
+        };
+        let suffix = if name.starts_with(CATEGORY_PREFIX) {
+            " (category)"
+        } else {
+            ""
+        };
         println!("  {:2}. {}{}{}", i + 1, display_name(name), marker, suffix);
     }
 

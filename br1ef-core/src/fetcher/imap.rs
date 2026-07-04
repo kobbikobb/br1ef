@@ -31,10 +31,7 @@ pub fn list_mailboxes(
         .list(None, Some("*"))
         .context("failed to list mailboxes")?;
 
-    let mut names: Vec<String> = mailboxes
-        .iter()
-        .map(|m| m.name().to_string())
-        .collect();
+    let mut names: Vec<String> = mailboxes.iter().map(|m| m.name().to_string()).collect();
 
     session.logout()?;
 
@@ -69,12 +66,16 @@ pub fn fetch_imap(
     let since = Utc::now() - Duration::days(7);
     let since_str = since.format("%d-%b-%Y").to_string();
 
-    let (search_filter, select_mailbox) = if let Some(category) = mailbox.strip_prefix(GMAIL_CATEGORY_PREFIX) {
-        let label = format!("CATEGORY_{}", category.to_uppercase());
-        (format!("X-GM-LABELS \"{label}\" SINCE {since_str}"), "[Gmail]/All Mail")
-    } else {
-        (format!("SINCE {since_str}"), mailbox)
-    };
+    let (search_filter, select_mailbox) =
+        if let Some(category) = mailbox.strip_prefix(GMAIL_CATEGORY_PREFIX) {
+            let label = format!("CATEGORY_{}", category.to_uppercase());
+            (
+                format!("X-GM-LABELS \"{label}\" SINCE {since_str}"),
+                "[Gmail]/All Mail",
+            )
+        } else {
+            (format!("SINCE {since_str}"), mailbox)
+        };
 
     session
         .select(select_mailbox)
@@ -109,8 +110,8 @@ pub fn fetch_imap(
             Err(_) => continue,
         };
 
-        let message_id = find_header(&parsed, "Message-ID")
-            .or_else(|| find_header(&parsed, "Message-Id"));
+        let message_id =
+            find_header(&parsed, "Message-ID").or_else(|| find_header(&parsed, "Message-Id"));
         let id = message_id.unwrap_or_else(|| {
             let uid = msg.uid.unwrap_or(0).to_string();
             let fallback = format!("{select_mailbox}/{uid}");
