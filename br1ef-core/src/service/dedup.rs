@@ -110,6 +110,83 @@ mod tests {
     }
 
     #[test]
+    fn normalize_vs_prefix() {
+        assert_eq!(normalize_subject("VS: hello"), "hello");
+        assert_eq!(normalize_subject("vs: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_sv_prefix() {
+        assert_eq!(normalize_subject("SV: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_vid_prefix() {
+        assert_eq!(normalize_subject("VID: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_antw_prefix() {
+        assert_eq!(normalize_subject("ANTW: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_wg_prefix() {
+        assert_eq!(normalize_subject("WG: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_mixed_prefixes() {
+        assert_eq!(normalize_subject("Re: Fwd: hello"), "hello");
+        assert_eq!(normalize_subject("AW: Re: hello"), "hello");
+        assert_eq!(normalize_subject("Fwd: Re: FW: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_very_deeply_nested() {
+        let subject = (0..100).map(|_| "Re: ").collect::<String>() + "hello";
+        assert_eq!(normalize_subject(&subject), "hello");
+    }
+
+    #[test]
+    fn normalize_double_space_after_prefix() {
+        assert_eq!(normalize_subject("Re:  hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_leading_whitespace() {
+        assert_eq!(normalize_subject("  Re: hello"), "hello");
+    }
+
+    #[test]
+    fn normalize_trailing_whitespace() {
+        assert_eq!(normalize_subject("Re: hello  "), "hello");
+    }
+
+    #[test]
+    fn normalize_unicode_subject() {
+        assert_eq!(normalize_subject("Re: こんにちは"), "こんにちは");
+    }
+
+    #[test]
+    fn normalize_re_only_with_space() {
+        assert_eq!(normalize_subject("Re: "), "Re:");
+    }
+
+    #[test]
+    fn normalize_fw_prefix() {
+        assert_eq!(normalize_subject("FW: hello"), "hello");
+        assert_eq!(normalize_subject("Fw: hello"), "hello");
+        assert_eq!(normalize_subject("fw: hello"), "hello");
+    }
+
+    #[test]
+    fn dedup_empty() {
+        let result = dedup_threads(vec![]);
+        assert!(result.is_empty());
+    }
+
+    #[test]
     fn dedup_single_item() {
         let items = vec![Item {
             id: "1".into(),
@@ -226,5 +303,81 @@ mod tests {
             },
         ];
         assert_eq!(dedup_threads(items).len(), 2);
+    }
+
+    #[test]
+    fn dedup_many_replies_only_keeps_last() {
+        let items: Vec<Item> = (0..10)
+            .map(|i| Item {
+                id: i.to_string(),
+                title: "Re: Hello".into(),
+                from: "alice@example.com".into(),
+                body: format!("reply {i}"),
+                source: "imap".into(),
+                urgent: false,
+            })
+            .collect();
+        let result = dedup_threads(items);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].id, "9");
+        assert_eq!(result[0].body, "reply 9");
+    }
+
+    #[test]
+    fn dedup_different_from_casing() {
+        let items = vec![
+            Item {
+                id: "1".into(),
+                title: "Hello".into(),
+                from: "Alice@example.com".into(),
+                body: "body".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+            Item {
+                id: "2".into(),
+                title: "Hello".into(),
+                from: "alice@example.com".into(),
+                body: "body".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+        ];
+        assert_eq!(dedup_threads(items).len(), 2);
+    }
+
+    #[test]
+    fn dedup_preserves_input_order() {
+        let items = vec![
+            Item {
+                id: "1".into(),
+                title: "Alpha".into(),
+                from: "a@example.com".into(),
+                body: "body".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+            Item {
+                id: "2".into(),
+                title: "Beta".into(),
+                from: "b@example.com".into(),
+                body: "body".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+            Item {
+                id: "3".into(),
+                title: "Gamma".into(),
+                from: "c@example.com".into(),
+                body: "body".into(),
+                source: "imap".into(),
+                urgent: false,
+            },
+        ];
+        let result = dedup_threads(items);
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].id, "1");
+        assert_eq!(result[1].id, "2");
+        assert_eq!(result[2].id, "3");
     }
 }
