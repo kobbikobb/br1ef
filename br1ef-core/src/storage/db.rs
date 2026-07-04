@@ -35,6 +35,11 @@ impl SqliteStorage {
             );",
         )
         .context("failed to create tables")?;
+
+        // migration: add summary column if missing
+        let _ =
+            conn.execute_batch("ALTER TABLE digests ADD COLUMN summary TEXT NOT NULL DEFAULT ''");
+
         Ok(Self {
             conn: Mutex::new(conn),
         })
@@ -103,8 +108,12 @@ impl Storage for SqliteStorage {
             .context("failed to clear old digests")?;
 
         conn.execute(
-            "INSERT INTO digests (total_items, generated_at) VALUES (?1, ?2)",
-            rusqlite::params![digest.total_items as i64, digest.generated_at.to_rfc3339(),],
+            "INSERT INTO digests (total_items, summary, generated_at) VALUES (?1, ?2, ?3)",
+            rusqlite::params![
+                digest.total_items as i64,
+                digest.summary,
+                digest.generated_at.to_rfc3339(),
+            ],
         )
         .context("failed to insert digest")?;
 
@@ -128,7 +137,7 @@ impl Storage for SqliteStorage {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
             .prepare(
-                "SELECT id, total_items, generated_at
+                "SELECT id, total_items, summary, generated_at
                  FROM digests
                  ORDER BY id DESC
                  LIMIT 1",
@@ -139,12 +148,13 @@ impl Storage for SqliteStorage {
             .query_row([], |row| {
                 let id: i64 = row.get(0)?;
                 let total_items: i64 = row.get(1)?;
-                let generated_at_str: String = row.get(2)?;
-                Ok((id, total_items, generated_at_str))
+                let summary: String = row.get(2)?;
+                let generated_at_str: String = row.get(3)?;
+                Ok((id, total_items, summary, generated_at_str))
             })
             .ok();
 
-        let (digest_id, total_items, generated_at_str) = match digest_row {
+        let (digest_id, total_items, summary, generated_at_str) = match digest_row {
             Some(r) => r,
             None => return Ok(None),
         };
@@ -178,6 +188,7 @@ impl Storage for SqliteStorage {
         Ok(Some(Digest {
             total_items: total_items as usize,
             by_source,
+            summary,
             generated_at,
         }))
     }
