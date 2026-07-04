@@ -3,8 +3,8 @@ use std::sync::Mutex;
 use anyhow::{Context, Result};
 use rusqlite::Connection;
 
-use crate::Item;
 use crate::storage::Storage;
+use crate::{Digest, Item};
 
 pub struct SqliteStorage {
     conn: Mutex<Connection>,
@@ -21,9 +21,20 @@ impl SqliteStorage {
                 body TEXT NOT NULL,
                 source TEXT NOT NULL,
                 urgent INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE TABLE IF NOT EXISTS digests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                total_items INTEGER NOT NULL,
+                generated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS digest_sources (
+                digest_id INTEGER NOT NULL,
+                source TEXT NOT NULL,
+                item_count INTEGER NOT NULL,
+                FOREIGN KEY (digest_id) REFERENCES digests(id)
             );",
         )
-        .context("failed to create items table")?;
+        .context("failed to create tables")?;
         Ok(Self {
             conn: Mutex::new(conn),
         })
@@ -84,5 +95,90 @@ impl Storage for SqliteStorage {
         conn.execute("DELETE FROM items", [])
             .context("failed to clear items")?;
         Ok(())
+    }
+
+    fn store_digest(&mut self, digest: &Digest) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        conn.execute("DELETE FROM digests", [])
+            .context("failed to clear old digests")?;
+
+        conn.execute(
+            "INSERT INTO digests (total_items, generated_at) VALUES (?1, ?2)",
+            rusqlite::params![digest.total_items as i64, digest.generated_at.to_rfc3339(),],
+        )
+        .context("failed to insert digest")?;
+
+        let digest_id = conn.last_insert_rowid();
+        let mut stmt = conn
+            .prepare(
+                "INSERT INTO digest_sources (digest_id, source, item_count)
+                 VALUES (?1, ?2, ?3)",
+            )
+            .context("failed to prepare source insert")?;
+
+        for (source, count) in &digest.by_source {
+            stmt.execute(rusqlite::params![digest_id, source, *count as i64])
+                .context("failed to insert digest source")?;
+        }
+
+        Ok(())
+    }
+
+    fn get_digest(&self) -> Result<Option<Digest>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, total_items, generated_at
+                 FROM digests
+                 ORDER BY id DESC
+                 LIMIT 1",
+            )
+            .context("failed to prepare digest select")?;
+
+        let digest_row = stmt
+            .query_row([], |row| {
+                let id: i64 = row.get(0)?;
+                let total_items: i64 = row.get(1)?;
+                let generated_at_str: String = row.get(2)?;
+                Ok((id, total_items, generated_at_str))
+            })
+            .ok();
+
+        let (digest_id, total_items, generated_at_str) = match digest_row {
+            Some(r) => r,
+            None => return Ok(None),
+        };
+
+        let generated_at = chrono::DateTime::parse_from_str(&generated_at_str, "%+")
+            .context("failed to parse digest timestamp")?
+            .to_utc();
+
+        let mut src_stmt = conn
+            .prepare(
+                "SELECT source, item_count
+                 FROM digest_sources
+                 WHERE digest_id = ?1
+                 ORDER BY item_count DESC",
+            )
+            .context("failed to prepare sources select")?;
+
+        let sources = src_stmt
+            .query_map(rusqlite::params![digest_id], |row| {
+                let source: String = row.get(0)?;
+                let count: i64 = row.get(1)?;
+                Ok((source, count as usize))
+            })
+            .context("failed to query digest sources")?;
+
+        let mut by_source = Vec::new();
+        for src in sources {
+            by_source.push(src.context("failed to read source row")?);
+        }
+
+        Ok(Some(Digest {
+            total_items: total_items as usize,
+            by_source,
+            generated_at,
+        }))
     }
 }
