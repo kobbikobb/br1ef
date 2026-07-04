@@ -1,6 +1,6 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 
-use crate::fetcher;
+use crate::fetcher::Fetcher;
 use crate::storage::Storage;
 
 const CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
@@ -12,16 +12,8 @@ fn display_name(raw: &str) -> &str {
     raw
 }
 
-pub fn configure(storage: &mut dyn Storage) -> Result<()> {
-    let host = std::env::var("IMAP_HOST").context("IMAP_HOST not set")?;
-    let port: u16 = std::env::var("IMAP_PORT")
-        .unwrap_or_else(|_| "993".into())
-        .parse()
-        .context("IMAP_PORT must be a number")?;
-    let username = std::env::var("IMAP_USERNAME").context("IMAP_USERNAME not set")?;
-    let password = std::env::var("IMAP_PASSWORD").context("IMAP_PASSWORD not set")?;
-
-    let all = fetcher::list_mailboxes(&host, port, &username, &password)?;
+pub fn configure(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<()> {
+    let all = fetcher.list_mailboxes()?;
 
     println!("Available mailboxes:\n");
     for (i, name) in all.iter().enumerate() {
@@ -59,7 +51,7 @@ pub fn configure(storage: &mut dyn Storage) -> Result<()> {
             let idx: usize = part
                 .trim()
                 .parse()
-                .context("Invalid number — enter comma-separated numbers")?;
+                .map_err(|_| anyhow::anyhow!("Invalid number — enter comma-separated numbers"))?;
             if idx == 0 || idx > all.len() {
                 anyhow::bail!("Number {idx} is out of range (1-{})", all.len());
             }
