@@ -1,3 +1,5 @@
+mod config;
+
 use anyhow::Result;
 use br1ef_core::agent::OllamaAgent;
 use br1ef_core::fetcher::ImapFetcher;
@@ -67,11 +69,27 @@ fn print_help() {
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
 }
 
+fn display_mailbox(name: &str) -> &str {
+    if let Some(cat) = name.strip_prefix("@@CATEGORY@@/") {
+        return cat;
+    }
+    name
+}
+
 fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     dotenvy::dotenv().ok();
     let fetcher = ImapFetcher::from_env()?;
-    let items = service::fetch_items(storage, &fetcher)?;
-    println!("Fetched {} item(s).", items.len());
+    let result = service::fetch_items(storage, &fetcher)?;
+
+    for stats in &result.per_mailbox {
+        println!(
+            "  {}: {} / {} new",
+            display_mailbox(&stats.name),
+            stats.new,
+            stats.total,
+        );
+    }
+    println!("Fetched {} item(s).", result.items.len());
     Ok(())
 }
 
@@ -117,6 +135,6 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
 fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     dotenvy::dotenv().ok();
     let fetcher = ImapFetcher::from_env()?;
-    service::configure(storage, &fetcher)?;
+    config::configure(storage, &fetcher)?;
     Ok(())
 }

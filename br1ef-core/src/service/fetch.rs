@@ -1,17 +1,24 @@
 use anyhow::{Context, Result};
+use std::collections::HashSet;
 
 use crate::Item;
 use crate::fetcher::Fetcher;
 use crate::storage::Storage;
 
-fn display_mailbox(name: &str) -> &str {
-    if let Some(cat) = name.strip_prefix("@@CATEGORY@@/") {
-        return cat;
-    }
-    name
+#[derive(Debug)]
+pub struct MailboxStats {
+    pub name: String,
+    pub total: usize,
+    pub new: usize,
 }
 
-pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<Vec<Item>> {
+#[derive(Debug)]
+pub struct FetchResult {
+    pub items: Vec<Item>,
+    pub per_mailbox: Vec<MailboxStats>,
+}
+
+pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<FetchResult> {
     let mailboxes = storage.get_selected_mailboxes()?;
     let mailboxes = if mailboxes.is_empty() {
         vec!["INBOX".to_string()]
@@ -20,7 +27,8 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<V
     };
 
     let mut all_items = Vec::new();
-    let mut seen_ids = std::collections::HashSet::new();
+    let mut seen_ids = HashSet::new();
+    let mut per_mailbox = Vec::with_capacity(mailboxes.len());
 
     for mailbox in &mailboxes {
         let items = fetcher
@@ -34,16 +42,18 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<V
             .inspect(|item| all_items.push(item.clone()))
             .count();
 
-        println!(
-            "  {}: {} / {} new",
-            display_mailbox(mailbox),
-            new_count,
+        per_mailbox.push(MailboxStats {
+            name: mailbox.clone(),
             total,
-        );
+            new: new_count,
+        });
     }
 
     storage.store_items(&all_items)?;
-    Ok(all_items)
+    Ok(FetchResult {
+        items: all_items,
+        per_mailbox,
+    })
 }
 
 #[cfg(test)]

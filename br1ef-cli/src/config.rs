@@ -1,7 +1,6 @@
 use anyhow::Result;
-
-use crate::fetcher::Fetcher;
-use crate::storage::Storage;
+use br1ef_core::fetcher::Fetcher;
+use br1ef_core::storage::Storage;
 
 const CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
 
