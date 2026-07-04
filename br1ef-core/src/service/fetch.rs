@@ -10,6 +10,47 @@ fn display_mailbox(name: &str) -> &str {
     name
 }
 
+fn normalize_subject(subject: &str) -> String {
+    let s = subject.trim();
+    let prefixes = ["re:", "fwd:", "fw:", "aw:", "vs:", "sv:", "vid:", "antw:", "wg:"];
+    for p in &prefixes {
+        if let Some(rest) = s.strip_prefix(p) {
+            if rest.starts_with(' ') || rest.starts_with('[') {
+                return normalize_subject(rest);
+            }
+        }
+        let upper = p.to_uppercase();
+        if let Some(rest) = s.strip_prefix(&upper) {
+            if rest.starts_with(' ') || rest.starts_with('[') {
+                return normalize_subject(rest);
+            }
+        }
+        let mixed = format!("{}{}", &p[..1].to_uppercase(), &p[1..]);
+        if let Some(rest) = s.strip_prefix(&mixed) {
+            if rest.starts_with(' ') || rest.starts_with('[') {
+                return normalize_subject(rest);
+            }
+        }
+    }
+    s.to_string()
+}
+
+fn dedup_threads(items: Vec<Item>) -> Vec<Item> {
+    let mut seen: std::collections::HashMap<(String, String), Item> = std::collections::HashMap::new();
+    let mut order: Vec<(String, String)> = Vec::new();
+
+    for item in items {
+        let normalized = normalize_subject(&item.title);
+        let key = (item.from.clone(), normalized);
+        if !seen.contains_key(&key) {
+            order.push(key.clone());
+        }
+        seen.insert(key, item);
+    }
+
+    order.into_iter().filter_map(|k| seen.remove(&k)).collect()
+}
+
 pub fn fetch_items(storage: &mut dyn Storage) -> Result<Vec<Item>> {
     let host = std::env::var("IMAP_HOST").context("IMAP_HOST not set")?;
     let port: u16 = std::env::var("IMAP_PORT")
@@ -41,6 +82,13 @@ pub fn fetch_items(storage: &mut dyn Storage) -> Result<Vec<Item>> {
             }
         }
         eprintln!("  {}: {} new item(s)", display_mailbox(mailbox), new_count);
+    }
+
+    let before = all_items.len();
+    all_items = dedup_threads(all_items);
+    let after = all_items.len();
+    if after < before {
+        eprintln!("  Thread collapse: {} → {} ({} duplicate threads)", before, after, before - after);
     }
 
     storage.store_items(&all_items)?;
