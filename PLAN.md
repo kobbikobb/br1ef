@@ -116,6 +116,13 @@ IMAP_PASSWORD=your-app-password
    - Fix date padding with `%-e`
    - Remove redundant "Summary:" header
 
+3. **`fetch.rs` — skip redundant Gmail categories**
+   - Gmail's Social/Promotions/Updates/Forums are labels applied to INBOX messages
+   - Fetching `[Gmail]/All Mail` with X-GM-LABELS returns the same items already fetched from INBOX
+   - All categorized items get deduplicated by Message-ID → silent "0 new"
+   - Fix: skip `@@CATEGORY@@/*` mailboxes when INBOX is in the selected list
+   - Print a clear note instead of the confusing "0 new"
+
 ### DoD
 
 - [x] `cargo build` passes

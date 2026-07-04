@@ -18,6 +18,8 @@ pub struct FetchResult {
     pub per_mailbox: Vec<MailboxStats>,
 }
 
+const CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
+
 pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<FetchResult> {
     let mailboxes = storage.get_selected_mailboxes()?;
     let mailboxes = if mailboxes.is_empty() {
@@ -26,11 +28,18 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<F
         mailboxes
     };
 
+    let has_inbox = mailboxes.iter().any(|m| m == "INBOX");
     let mut all_items = Vec::new();
     let mut seen_ids = HashSet::new();
     let mut per_mailbox = Vec::with_capacity(mailboxes.len());
 
     for mailbox in &mailboxes {
+        if has_inbox && mailbox.starts_with(CATEGORY_PREFIX) {
+            let cat = &mailbox[CATEGORY_PREFIX.len()..];
+            eprintln!("  {cat}: skipped (already covered by INBOX)");
+            continue;
+        }
+
         let items = fetcher
             .fetch_mailbox(mailbox)
             .with_context(|| format!("failed to fetch from \"{mailbox}\""))?;
