@@ -160,17 +160,96 @@ fn extract_body(parsed: &ParsedMail) -> String {
         }
         for part in &parsed.subparts {
             if part.ctype.mimetype == "text/html" {
-                return part.get_body().unwrap_or_default();
+                return strip_html(&part.get_body().unwrap_or_default());
             }
         }
         return String::new();
     }
 
     if ct == "text/html" && parsed.subparts.is_empty() {
-        return parsed.get_body().unwrap_or_default();
+        return strip_html(&parsed.get_body().unwrap_or_default());
     }
 
     String::new()
+}
+
+fn strip_html(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    let chars: Vec<char> = s.chars().collect();
+    let len = chars.len();
+    let mut i = 0;
+
+    while i < len {
+        if chars[i] == '<' {
+            i += 1;
+
+            let mut tag_name = String::new();
+            let mut j = i;
+            if j < len && chars[j] == '/' {
+                j += 1;
+            }
+            while j < len && !chars[j].is_whitespace() && chars[j] != '>' {
+                tag_name.push(chars[j].to_ascii_lowercase());
+                j += 1;
+            }
+
+            if tag_name == "style" || tag_name == "script" {
+                let closing = format!("</{}", tag_name);
+                while i < len {
+                    if chars[i] == '<' {
+                        let rest: String = chars[i + 1..]
+                            .iter()
+                            .take(closing.len())
+                            .collect();
+                        if rest.to_lowercase() == closing {
+                            while i < len && chars[i] != '>' {
+                                i += 1;
+                            }
+                            if i < len {
+                                i += 1;
+                            }
+                            break;
+                        }
+                    }
+                    i += 1;
+                }
+                continue;
+            }
+
+            while i < len && chars[i] != '>' {
+                i += 1;
+            }
+            if i < len {
+                i += 1;
+            }
+        } else {
+            result.push(chars[i]);
+            i += 1;
+        }
+    }
+
+    let decoded = result
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&nbsp;", " ");
+
+    let mut out = String::with_capacity(decoded.len());
+    let mut prev_was_space = false;
+    for c in decoded.chars() {
+        if c.is_whitespace() {
+            if !prev_was_space {
+                out.push(' ');
+            }
+            prev_was_space = true;
+        } else {
+            out.push(c);
+            prev_was_space = false;
+        }
+    }
+
+    out.trim().to_string()
 }
 
 #[cfg(test)]
@@ -208,7 +287,7 @@ mod tests {
 
         let body = extract_body(&parsed);
 
-        assert_eq!(body, "<html><body>hello</body></html>");
+        assert_eq!(body, "hello");
     }
 
     #[test]
@@ -238,7 +317,7 @@ mod tests {
 
         let body = extract_body(&parsed);
 
-        assert_eq!(body.trim(), "<html><body>fallback</body></html>");
+        assert_eq!(body.trim(), "fallback");
     }
 
     #[test]
