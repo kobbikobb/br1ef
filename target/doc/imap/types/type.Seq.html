@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="From section 2.3.1.2 of RFC 3501."><title>Seq in imap::types - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="imap" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc type"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Seq</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../imap/index.html">imap</a><span class="version">2.4.1</span></h2></div><div class="sidebar-elems"><div id="rustdoc-modnav"><h2><a href="index.html">In imap::<wbr>types</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">imap</a>::<wbr><a href="index.html">types</a></div><h1>Type Alias <span class="type">Seq</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/imap/types/mod.rs.html#106">Source</a> </span></div><pre class="rust item-decl"><code>pub type Seq = <a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.u32.html">u32</a>;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>From section <a href="https://tools.ietf.org/html/rfc3501#section-2.3.1.2">2.3.1.2 of RFC 3501</a>.</p>
+<p>A relative position from 1 to the number of messages in the mailbox.
+This position is ordered by ascending unique identifier.  As
+each new message is added, it is assigned a message sequence number
+that is 1 higher than the number of messages in the mailbox before
+that new message was added.</p>
+<p>Message sequence numbers can be reassigned during the session.  For
+example, when a message is permanently removed (expunged) from the
+mailbox, the message sequence number for all subsequent messages is
+decremented.  The number of messages in the mailbox is also
+decremented.  Similarly, a new message can be assigned a message
+sequence number that was once held by some other message prior to an
+expunge.</p>
+<p>In addition to accessing messages by relative position in the
+mailbox, message sequence numbers can be used in mathematical
+calculations.  For example, if an untagged “11 EXISTS” is received,
+and previously an untagged “8 EXISTS” was received, three new
+messages have arrived with message sequence numbers of 9, 10, and 11.
+Another example, if message 287 in a 523 message mailbox has UID
+12345, there are exactly 286 messages which have lesser UIDs and 236
+messages which have greater UIDs.</p>
+</div></details></section></div></main></body></html>

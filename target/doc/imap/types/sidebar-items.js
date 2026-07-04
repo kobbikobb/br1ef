@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Flag","NameAttribute","StatusAttribute","UnsolicitedResponse"],"struct":["Capabilities","Fetch","Mailbox","Name","ZeroCopy"],"type":["Seq","Uid"]};

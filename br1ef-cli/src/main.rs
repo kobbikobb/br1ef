@@ -42,7 +42,7 @@ fn main() -> Result<()> {
         Commands::Fetch => cmd_fetch(&mut storage),
         Commands::Digest => cmd_digest(&mut storage, &agent),
         Commands::Daily => cmd_daily(&storage),
-        Commands::Config => cmd_config(),
+        Commands::Config => cmd_config(&mut storage),
     }
 }
 
@@ -112,7 +112,8 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
     Ok(())
 }
 
-fn cmd_config() -> Result<()> {
-    service::configure()?;
+fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
+    dotenvy::dotenv().ok();
+    service::configure(storage)?;
     Ok(())
 }

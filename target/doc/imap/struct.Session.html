@@ -1,0 +1,602 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An authenticated IMAP session providing the usual IMAP commands. This type is what you get from a succesful login attempt."><title>Session in imap - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="imap" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc struct"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Session</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../imap/index.html">imap</a><span class="version">2.4.1</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Session</a></h2><h3><a href="#fields">Fields</a></h3><ul class="block structfield"><li><a href="#structfield.unsolicited_responses" title="unsolicited_responses">unsolicited_responses</a></li></ul><h3><a href="#implementations">Methods</a></h3><ul class="block method"><li><a href="#method.append" title="append">append</a></li><li><a href="#method.append_with_flags" title="append_with_flags">append_with_flags</a></li><li><a href="#method.append_with_flags_and_date" title="append_with_flags_and_date">append_with_flags_and_date</a></li><li><a href="#method.capabilities" title="capabilities">capabilities</a></li><li><a href="#method.check" title="check">check</a></li><li><a href="#method.close" title="close">close</a></li><li><a href="#method.copy" title="copy">copy</a></li><li><a href="#method.create" title="create">create</a></li><li><a href="#method.delete" title="delete">delete</a></li><li><a href="#method.examine" title="examine">examine</a></li><li><a href="#method.expunge" title="expunge">expunge</a></li><li><a href="#method.fetch" title="fetch">fetch</a></li><li><a href="#method.idle" title="idle">idle</a></li><li><a href="#method.list" title="list">list</a></li><li><a href="#method.logout" title="logout">logout</a></li><li><a href="#method.lsub" title="lsub">lsub</a></li><li><a href="#method.mv" title="mv">mv</a></li><li><a href="#method.noop" title="noop">noop</a></li><li><a href="#method.rename" title="rename">rename</a></li><li><a href="#method.run_command" title="run_command">run_command</a></li><li><a href="#method.run_command_and_check_ok" title="run_command_and_check_ok">run_command_and_check_ok</a></li><li><a href="#method.run_command_and_read_response" title="run_command_and_read_response">run_command_and_read_response</a></li><li><a href="#method.search" title="search">search</a></li><li><a href="#method.select" title="select">select</a></li><li><a href="#method.status" title="status">status</a></li><li><a href="#method.store" title="store">store</a></li><li><a href="#method.subscribe" title="subscribe">subscribe</a></li><li><a href="#method.uid_copy" title="uid_copy">uid_copy</a></li><li><a href="#method.uid_expunge" title="uid_expunge">uid_expunge</a></li><li><a href="#method.uid_fetch" title="uid_fetch">uid_fetch</a></li><li><a href="#method.uid_mv" title="uid_mv">uid_mv</a></li><li><a href="#method.uid_search" title="uid_search">uid_search</a></li><li><a href="#method.uid_store" title="uid_store">uid_store</a></li><li><a href="#method.unsubscribe" title="unsubscribe">unsubscribe</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block trait-implementation"><li><a href="#impl-Debug-for-Session%3CT%3E" title="Debug">Debug</a></li><li><a href="#impl-__Deref-for-Session%3CT%3E" title="Deref">Deref</a></li><li><a href="#impl-DerefMut-for-Session%3CT%3E" title="DerefMut">DerefMut</a></li></ul><h3><a href="#synthetic-implementations">Auto Trait Implementations</a></h3><ul class="block synthetic-implementation"><li><a href="#impl-Sync-for-Session%3CT%3E" title="!Sync">!Sync</a></li><li><a href="#impl-Freeze-for-Session%3CT%3E" title="Freeze">Freeze</a></li><li><a href="#impl-RefUnwindSafe-for-Session%3CT%3E" title="RefUnwindSafe">RefUnwindSafe</a></li><li><a href="#impl-Send-for-Session%3CT%3E" title="Send">Send</a></li><li><a href="#impl-Unpin-for-Session%3CT%3E" title="Unpin">Unpin</a></li><li><a href="#impl-UnsafeUnpin-for-Session%3CT%3E" title="UnsafeUnpin">UnsafeUnpin</a></li><li><a href="#impl-UnwindSafe-for-Session%3CT%3E" title="UnwindSafe">UnwindSafe</a></li></ul><h3><a href="#blanket-implementations">Blanket Implementations</a></h3><ul class="block blanket-implementation"><li><a href="#impl-Any-for-T" title="Any">Any</a></li><li><a href="#impl-Borrow%3CT%3E-for-T" title="Borrow&#60;T&#62;">Borrow&#60;T&#62;</a></li><li><a href="#impl-BorrowMut%3CT%3E-for-T" title="BorrowMut&#60;T&#62;">BorrowMut&#60;T&#62;</a></li><li><a href="#impl-From%3CT%3E-for-T" title="From&#60;T&#62;">From&#60;T&#62;</a></li><li><a href="#impl-Into%3CU%3E-for-T" title="Into&#60;U&#62;">Into&#60;U&#62;</a></li><li><a href="#impl-Receiver-for-P" title="Receiver">Receiver</a></li><li><a href="#impl-TryFrom%3CU%3E-for-T" title="TryFrom&#60;U&#62;">TryFrom&#60;U&#62;</a></li><li><a href="#impl-TryInto%3CU%3E-for-T" title="TryInto&#60;U&#62;">TryInto&#60;U&#62;</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate imap</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="index.html">imap</a></div><h1>Struct <span class="struct">Session</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/imap/client.rs.html#111-118">Source</a> </span></div><pre class="rust item-decl"><code>pub struct Session&lt;T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Read.html" title="trait std::io::Read">Read</a> + <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Write.html" title="trait std::io::Write">Write</a>&gt; {
+    pub unsolicited_responses: <a class="struct" href="https://doc.rust-lang.org/1.96.1/std/sync/mpsc/struct.Receiver.html" title="struct std::sync::mpsc::Receiver">Receiver</a>&lt;<a class="enum" href="types/enum.UnsolicitedResponse.html" title="enum imap::types::UnsolicitedResponse">UnsolicitedResponse</a>&gt;,
+    <span class="comment">/* private fields */</span>
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>An authenticated IMAP session providing the usual IMAP commands. This type is what you get from
+a succesful login attempt.</p>
+<p>Note that the server <em>is</em> allowed to unilaterally send things to the client for messages in
+a selected mailbox whose status has changed. See the note on <a href="https://tools.ietf.org/html/rfc3501#section-7">unilateral server responses
+in RFC 3501</a>. Any such messages are parsed out
+and sent on <code>Session::unsolicited_responses</code>.</p>
+</div></details><h2 id="fields" class="fields section-header">Fields<a href="#fields" class="anchor">§</a></h2><span id="structfield.unsolicited_responses" class="structfield section-header"><a href="#structfield.unsolicited_responses" class="anchor field">§</a><code>unsolicited_responses: <a class="struct" href="https://doc.rust-lang.org/1.96.1/std/sync/mpsc/struct.Receiver.html" title="struct std::sync::mpsc::Receiver">Receiver</a>&lt;<a class="enum" href="types/enum.UnsolicitedResponse.html" title="enum imap::types::UnsolicitedResponse">UnsolicitedResponse</a>&gt;</code></span><div class="docblock"><p>Server responses that are not related to the current command. See also the note on
+<a href="https://tools.ietf.org/html/rfc3501#section-7">unilateral server responses in RFC 3501</a>.</p>
+</div><h2 id="implementations" class="section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-Session%3CT%3E" class="impl"><a class="src rightside" href="../src/imap/client.rs.html#492-1305">Source</a><a href="#impl-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Read.html" title="trait std::io::Read">Read</a> + <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Write.html" title="trait std::io::Write">Write</a>&gt; <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.select" class="method"><a class="src rightside" href="../src/imap/client.rs.html#521-528">Source</a><h4 class="code-header">pub fn <a href="#method.select" class="fn">select</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, mailbox_name: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="types/struct.Mailbox.html" title="struct imap::types::Mailbox">Mailbox</a>&gt;</h4></section></summary><div class="docblock"><p>Selects a mailbox</p>
+<p>The <code>SELECT</code> command selects a mailbox so that messages in the mailbox can be accessed.
+Note that earlier versions of this protocol only required the FLAGS, EXISTS, and RECENT
+untagged data; consequently, client implementations SHOULD implement default behavior for
+missing data as discussed with the individual item.</p>
+<p>Only one mailbox can be selected at a time in a connection; simultaneous access to multiple
+mailboxes requires multiple connections.  The <code>SELECT</code> command automatically deselects any
+currently selected mailbox before attempting the new selection. Consequently, if a mailbox
+is selected and a <code>SELECT</code> command that fails is attempted, no mailbox is selected.</p>
+<p>Note that the server <em>is</em> allowed to unilaterally send things to the client for messages in
+a selected mailbox whose status has changed. See the note on <a href="https://tools.ietf.org/html/rfc3501#section-7">unilateral server responses
+in RFC 3501</a>. This means that if you use
+[<code>Connection::run_command_and_read_response</code>], you <em>may</em> see additional untagged <code>RECENT</code>,
+<code>EXISTS</code>, <code>FETCH</code>, and <code>EXPUNGE</code> responses. You can get them from the
+<code>unsolicited_responses</code> channel of the <a href="struct.Session.html"><code>Session</code></a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.examine" class="method"><a class="src rightside" href="../src/imap/client.rs.html#534-540">Source</a><h4 class="code-header">pub fn <a href="#method.examine" class="fn">examine</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, mailbox_name: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="types/struct.Mailbox.html" title="struct imap::types::Mailbox">Mailbox</a>&gt;</h4></section></summary><div class="docblock"><p>The <code>EXAMINE</code> command is identical to <a href="struct.Session.html#method.select" title="method imap::Session::select"><code>Session::select</code></a> and returns the same output;
+however, the selected mailbox is identified as read-only. No changes to the permanent state
+of the mailbox, including per-user state, will happen in a mailbox opened with <code>examine</code>;
+in particular, messagess cannot lose <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a> in an examined mailbox.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.fetch" class="method"><a class="src rightside" href="../src/imap/client.rs.html#600-615">Source</a><h4 class="code-header">pub fn <a href="#method.fetch" class="fn">fetch</a>&lt;S1, S2&gt;(
+    &amp;mut self,
+    sequence_set: S1,
+    query: S2,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="types/struct.Fetch.html" title="struct imap::types::Fetch">Fetch</a>&gt;&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;<div class="where">where
+    S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+    S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,</div></h4></section></summary><div class="docblock"><p>Fetch retrieves data associated with a set of messages in the mailbox.</p>
+<p>Note that the server <em>is</em> allowed to unilaterally include <code>FETCH</code> responses for other
+messages in the selected mailbox whose status has changed. See the note on <a href="https://tools.ietf.org/html/rfc3501#section-7">unilateral
+server responses in RFC 3501</a>.</p>
+<p><code>query</code> is a list of “data items” (space-separated in parentheses if <code>&gt;1</code>). There are three
+“macro items” which specify commonly-used sets of data items, and can be used instead of
+data items.  A macro must be used by itself, and not in conjunction with other macros or
+data items. They are:</p>
+<ul>
+<li><code>ALL</code>: equivalent to: <code>(FLAGS INTERNALDATE RFC822.SIZE ENVELOPE)</code></li>
+<li><code>FAST</code>: equivalent to: <code>(FLAGS INTERNALDATE RFC822.SIZE)</code></li>
+</ul>
+<p>The currently defined data items that can be fetched are listen <a href="https://tools.ietf.org/html/rfc3501#section-6.4.5">in the
+RFC</a>, but here are some common ones:</p>
+<ul>
+<li>
+<p><code>FLAGS</code>: The flags that are set for this message.</p>
+</li>
+<li>
+<p><code>INTERNALDATE</code>: The internal date of the message.</p>
+</li>
+<li>
+<p><code>BODY[&lt;section&gt;]</code>:</p>
+<p>The text of a particular body section.  The section specification is a set of zero or
+more part specifiers delimited by periods.  A part specifier is either a part number
+(see RFC) or one of the following: <code>HEADER</code>, <code>HEADER.FIELDS</code>, <code>HEADER.FIELDS.NOT</code>,
+<code>MIME</code>, and <code>TEXT</code>.  An empty section specification (i.e., <code>BODY[]</code>) refers to the
+entire message, including the header.</p>
+<p>The <code>HEADER</code>, <code>HEADER.FIELDS</code>, and <code>HEADER.FIELDS.NOT</code> part specifiers refer to the
+<a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a> header of the message or of an
+encapsulated <a href="https://tools.ietf.org/html/rfc2046">MIME-IMT</a>
+MESSAGE/<a href="https://tools.ietf.org/html/rfc822">RFC822</a> message. <code>HEADER.FIELDS</code> and
+<code>HEADER.FIELDS.NOT</code> are followed by a list of field-name (as defined in
+<a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a>) names, and return a subset of the
+header.  The subset returned by <code>HEADER.FIELDS</code> contains only those header fields with
+a field-name that matches one of the names in the list; similarly, the subset returned
+by <code>HEADER.FIELDS.NOT</code> contains only the header fields with a non-matching field-name.
+The field-matching is case-insensitive but otherwise exact.  Subsetting does not
+exclude the <a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a> delimiting blank line
+between the header and the body; the blank line is included in all header fetches,
+except in the case of a message which has no body and no blank line.</p>
+<p>The <code>MIME</code> part specifier refers to the <a href="https://tools.ietf.org/html/rfc2045">MIME-IMB</a>
+header for this part.</p>
+<p>The <code>TEXT</code> part specifier refers to the text body of the message,
+omitting the <a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a> header.</p>
+<p><a href="types/enum.Flag.html#variant.Seen" title="variant imap::types::Flag::Seen"><code>Flag::Seen</code></a> is implicitly set when <code>BODY</code> is fetched; if this causes the flags to
+change, they will generally be included as part of the <code>FETCH</code> responses.</p>
+</li>
+<li>
+<p><code>BODY.PEEK[&lt;section&gt;]</code>: An alternate form of <code>BODY[&lt;section&gt;]</code> that does not implicitly
+set <a href="types/enum.Flag.html#variant.Seen" title="variant imap::types::Flag::Seen"><code>Flag::Seen</code></a>.</p>
+</li>
+<li>
+<p><code>ENVELOPE</code>: The envelope structure of the message.  This is computed by the server by
+parsing the <a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a> header into the component
+parts, defaulting various fields as necessary.</p>
+</li>
+<li>
+<p><code>RFC822</code>: Functionally equivalent to <code>BODY[]</code>.</p>
+</li>
+<li>
+<p><code>RFC822.HEADER</code>: Functionally equivalent to <code>BODY.PEEK[HEADER]</code>.</p>
+</li>
+<li>
+<p><code>RFC822.SIZE</code>: The <a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a> size of the message.</p>
+</li>
+<li>
+<p><code>UID</code>: The unique identifier for the message.</p>
+</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uid_fetch" class="method"><a class="src rightside" href="../src/imap/client.rs.html#619-634">Source</a><h4 class="code-header">pub fn <a href="#method.uid_fetch" class="fn">uid_fetch</a>&lt;S1, S2&gt;(
+    &amp;mut self,
+    uid_set: S1,
+    query: S2,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="types/struct.Fetch.html" title="struct imap::types::Fetch">Fetch</a>&gt;&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;<div class="where">where
+    S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+    S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,</div></h4></section></summary><div class="docblock"><p>Equivalent to <a href="struct.Session.html#method.fetch" title="method imap::Session::fetch"><code>Session::fetch</code></a>, except that all identifiers in <code>uid_set</code> are
+<a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a>s. See also the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code> command</a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.noop" class="method"><a class="src rightside" href="../src/imap/client.rs.html#637-640">Source</a><h4 class="code-header">pub fn <a href="#method.noop" class="fn">noop</a>(&amp;mut self) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Noop always succeeds, and it does nothing.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.logout" class="method"><a class="src rightside" href="../src/imap/client.rs.html#643-645">Source</a><h4 class="code-header">pub fn <a href="#method.logout" class="fn">logout</a>(&amp;mut self) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Logout informs the server that the client is done with the connection.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.create" class="method"><a class="src rightside" href="../src/imap/client.rs.html#669-671">Source</a><h4 class="code-header">pub fn <a href="#method.create" class="fn">create</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, mailbox_name: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.3"><code>CREATE</code> command</a> creates a mailbox
+with the given name.  <code>Ok</code> is returned only if a new mailbox with that name has been
+created.  It is an error to attempt to create <code>INBOX</code> or a mailbox with a name that
+refers to an extant mailbox.  Any error in creation will return <a href="error/enum.Error.html#variant.No" title="variant imap::error::Error::No"><code>Error::No</code></a>.</p>
+<p>If the mailbox name is suffixed with the server’s hierarchy separator character (as
+returned from the server by <a href="struct.Session.html#method.list" title="method imap::Session::list"><code>Session::list</code></a>), this is a declaration that the client
+intends to create mailbox names under this name in the hierarchy.  Servers that do not
+require this declaration will ignore the declaration.  In any case, the name created is
+without the trailing hierarchy delimiter.</p>
+<p>If the server’s hierarchy separator character appears elsewhere in the name, the server
+will generally create any superior hierarchical names that are needed for the <code>CREATE</code>
+command to be successfully completed.  In other words, an attempt to create <code>foo/bar/zap</code>
+on a server in which <code>/</code> is the hierarchy separator character will usually create <code>foo/</code>
+and <code>foo/bar/</code> if they do not already exist.</p>
+<p>If a new mailbox is created with the same name as a mailbox which was deleted, its unique
+identifiers will be greater than any unique identifiers used in the previous incarnation of
+the mailbox UNLESS the new incarnation has a different unique identifier validity value.
+See the description of the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code>
+command</a> for more detail.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.delete" class="method"><a class="src rightside" href="../src/imap/client.rs.html#692-694">Source</a><h4 class="code-header">pub fn <a href="#method.delete" class="fn">delete</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, mailbox_name: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.4"><code>DELETE</code> command</a> permanently
+removes the mailbox with the given name.  <code>Ok</code> is returned only if the mailbox has been
+deleted.  It is an error to attempt to delete <code>INBOX</code> or a mailbox name that does not
+exist.</p>
+<p>The <code>DELETE</code> command will not remove inferior hierarchical names. For example, if a mailbox
+<code>foo</code> has an inferior <code>foo.bar</code> (assuming <code>.</code> is the hierarchy delimiter character),
+removing <code>foo</code> will not remove <code>foo.bar</code>.  It is an error to attempt to delete a name that
+has inferior hierarchical names and also has <a href="types/enum.NameAttribute.html#variant.NoSelect" title="variant imap::types::NameAttribute::NoSelect"><code>NameAttribute::NoSelect</code></a>.</p>
+<p>It is permitted to delete a name that has inferior hierarchical names and does not have
+<a href="types/enum.NameAttribute.html#variant.NoSelect" title="variant imap::types::NameAttribute::NoSelect"><code>NameAttribute::NoSelect</code></a>.  In this case, all messages in that mailbox are removed, and
+the name will acquire <a href="types/enum.NameAttribute.html#variant.NoSelect" title="variant imap::types::NameAttribute::NoSelect"><code>NameAttribute::NoSelect</code></a>.</p>
+<p>The value of the highest-used unique identifier of the deleted mailbox will be preserved so
+that a new mailbox created with the same name will not reuse the identifiers of the former
+incarnation, UNLESS the new incarnation has a different unique identifier validity value.
+See the description of the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code>
+command</a> for more detail.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.rename" class="method"><a class="src rightside" href="../src/imap/client.rs.html#721-727">Source</a><h4 class="code-header">pub fn <a href="#method.rename" class="fn">rename</a>&lt;S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    from: S1,
+    to: S2,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.5"><code>RENAME</code> command</a> changes the name
+of a mailbox.  <code>Ok</code> is returned only if the mailbox has been renamed.  It is an error to
+attempt to rename from a mailbox name that does not exist or to a mailbox name that already
+exists.  Any error in renaming will return <a href="error/enum.Error.html#variant.No" title="variant imap::error::Error::No"><code>Error::No</code></a>.</p>
+<p>If the name has inferior hierarchical names, then the inferior hierarchical names will also
+be renamed.  For example, a rename of <code>foo</code> to <code>zap</code> will rename <code>foo/bar</code> (assuming <code>/</code> is
+the hierarchy delimiter character) to <code>zap/bar</code>.</p>
+<p>If the server’s hierarchy separator character appears in the name, the server will
+generally create any superior hierarchical names that are needed for the <code>RENAME</code> command
+to complete successfully.  In other words, an attempt to rename <code>foo/bar/zap</code> to
+<code>baz/rag/zowie</code> on a server in which <code>/</code> is the hierarchy separator character will
+generally create <code>baz/</code> and <code>baz/rag/</code> if they do not already exist.</p>
+<p>The value of the highest-used unique identifier of the old mailbox name will be preserved
+so that a new mailbox created with the same name will not reuse the identifiers of the
+former incarnation, UNLESS the new incarnation has a different unique identifier validity
+value. See the description of the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code>
+command</a> for more detail.</p>
+<p>Renaming <code>INBOX</code> is permitted, and has special behavior.  It moves all messages in <code>INBOX</code>
+to a new mailbox with the given name, leaving <code>INBOX</code> empty.  If the server implementation
+supports inferior hierarchical names of <code>INBOX</code>, these are unaffected by a rename of
+<code>INBOX</code>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.subscribe" class="method"><a class="src rightside" href="../src/imap/client.rs.html#737-739">Source</a><h4 class="code-header">pub fn <a href="#method.subscribe" class="fn">subscribe</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, mailbox: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.6"><code>SUBSCRIBE</code> command</a> adds the
+specified mailbox name to the server’s set of “active” or “subscribed” mailboxes as
+returned by <a href="struct.Session.html#method.lsub" title="method imap::Session::lsub"><code>Session::lsub</code></a>.  This command returns <code>Ok</code> only if the subscription is
+successful.</p>
+<p>The server may validate the mailbox argument to <code>SUBSCRIBE</code> to verify that it exists.
+However, it will not unilaterally remove an existing mailbox name from the subscription
+list even if a mailbox by that name no longer exists.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.unsubscribe" class="method"><a class="src rightside" href="../src/imap/client.rs.html#745-747">Source</a><h4 class="code-header">pub fn <a href="#method.unsubscribe" class="fn">unsubscribe</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, mailbox: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.7"><code>UNSUBSCRIBE</code> command</a> removes the
+specified mailbox name from the server’s set of “active” or “subscribed” mailboxes as
+returned by <a href="struct.Session.html#method.lsub" title="method imap::Session::lsub"><code>Session::lsub</code></a>.  This command returns <code>Ok</code> only if the unsubscription is
+successful.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.capabilities" class="method"><a class="src rightside" href="../src/imap/client.rs.html#752-755">Source</a><h4 class="code-header">pub fn <a href="#method.capabilities" class="fn">capabilities</a>(&amp;mut self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="types/struct.Capabilities.html" title="struct imap::types::Capabilities">Capabilities</a>&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.1.1"><code>CAPABILITY</code> command</a> requests a
+listing of capabilities that the server supports.  The server will include “IMAP4rev1” as
+one of the listed capabilities. See <a href="types/struct.Capabilities.html" title="struct imap::types::Capabilities"><code>Capabilities</code></a> for further details.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.expunge" class="method"><a class="src rightside" href="../src/imap/client.rs.html#760-763">Source</a><h4 class="code-header">pub fn <a href="#method.expunge" class="fn">expunge</a>(&amp;mut self) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="types/type.Seq.html" title="type imap::types::Seq">Seq</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.4.3"><code>EXPUNGE</code> command</a> permanently
+removes all messages that have <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> set from the currently selected mailbox.
+The message sequence number of each message that is removed is returned.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uid_expunge" class="method"><a class="src rightside" href="../src/imap/client.rs.html#787-790">Source</a><h4 class="code-header">pub fn <a href="#method.uid_expunge" class="fn">uid_expunge</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, uid_set: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="types/type.Uid.html" title="type imap::types::Uid">Uid</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc4315#section-2.1"><code>UID EXPUNGE</code> command</a> permanently
+removes all messages that both have <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> set and have a <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a> that is
+included in the specified sequence set from the currently selected mailbox.  If a message
+either does not have <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> set or has a <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a> that is not included in the
+specified sequence set, it is not affected.</p>
+<p>This command is particularly useful for disconnected use clients. By using [<code>uid_expunge</code>]
+instead of [<code>expunge</code>] when resynchronizing with the server, the client can ensure that it
+does not inadvertantly remove any messages that have been marked as <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> by
+other clients between the time that the client was last connected and the time the client
+resynchronizes.</p>
+<p>This command requires that the server supports <a href="https://tools.ietf.org/html/rfc4315">RFC
+4315</a> as indicated by the <code>UIDPLUS</code> capability (see
+<a href="struct.Session.html#method.capabilities" title="method imap::Session::capabilities"><code>Session::capabilities</code></a>). If the server does not support the <code>UIDPLUS</code> capability, the
+client should fall back to using <a href="struct.Session.html#method.store" title="method imap::Session::store"><code>Session::store</code></a> to temporarily remove <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a>
+from messages it does not want to remove, then invoking <a href="struct.Session.html#method.expunge" title="method imap::Session::expunge"><code>Session::expunge</code></a>.  Finally, the
+client should use <a href="struct.Session.html#method.store" title="method imap::Session::store"><code>Session::store</code></a> to restore <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> on the messages in which
+it was temporarily removed.</p>
+<p>Alternatively, the client may fall back to using just <a href="struct.Session.html#method.expunge" title="method imap::Session::expunge"><code>Session::expunge</code></a>, risking the
+unintended removal of some messages.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.check" class="method"><a class="src rightside" href="../src/imap/client.rs.html#802-804">Source</a><h4 class="code-header">pub fn <a href="#method.check" class="fn">check</a>(&amp;mut self) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.4.1"><code>CHECK</code> command</a> requests a
+checkpoint of the currently selected mailbox.  A checkpoint refers to any
+implementation-dependent housekeeping associated with the mailbox (e.g., resolving the
+server’s in-memory state of the mailbox with the state on its disk) that is not normally
+executed as part of each command.  A checkpoint MAY take a non-instantaneous amount of real
+time to complete.  If a server implementation has no such housekeeping considerations,
+<a href="struct.Session.html#method.check" title="method imap::Session::check"><code>Session::check</code></a> is equivalent to <a href="struct.Session.html#method.noop" title="method imap::Session::noop"><code>Session::noop</code></a>.</p>
+<p>There is no guarantee that an <code>EXISTS</code> untagged response will happen as a result of
+<code>CHECK</code>.  <a href="struct.Session.html#method.noop" title="method imap::Session::noop"><code>Session::noop</code></a> SHOULD be used for new message polling.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.close" class="method"><a class="src rightside" href="../src/imap/client.rs.html#821-823">Source</a><h4 class="code-header">pub fn <a href="#method.close" class="fn">close</a>(&amp;mut self) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.4.2"><code>CLOSE</code> command</a> permanently
+removes all messages that have <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> set from the currently selected mailbox,
+and returns to the authenticated state from the selected state.  No <code>EXPUNGE</code> responses are
+sent.</p>
+<p>No messages are removed, and no error is given, if the mailbox is selected by
+<a href="struct.Session.html#method.examine" title="method imap::Session::examine"><code>Session::examine</code></a> or is otherwise selected read-only.</p>
+<p>Even if a mailbox is selected, <a href="struct.Session.html#method.select" title="method imap::Session::select"><code>Session::select</code></a>, <a href="struct.Session.html#method.examine" title="method imap::Session::examine"><code>Session::examine</code></a>, or
+<a href="struct.Session.html#method.logout" title="method imap::Session::logout"><code>Session::logout</code></a> command MAY be issued without previously invoking <a href="struct.Session.html#method.close" title="method imap::Session::close"><code>Session::close</code></a>.
+<a href="struct.Session.html#method.select" title="method imap::Session::select"><code>Session::select</code></a>, <a href="struct.Session.html#method.examine" title="method imap::Session::examine"><code>Session::examine</code></a>, and <a href="struct.Session.html#method.logout" title="method imap::Session::logout"><code>Session::logout</code></a> implicitly close the
+currently selected mailbox without doing an expunge.  However, when many messages are
+deleted, a <code>CLOSE-LOGOUT</code> or <code>CLOSE-SELECT</code> sequence is considerably faster than an
+<code>EXPUNGE-LOGOUT</code> or <code>EXPUNGE-SELECT</code> because no <code>EXPUNGE</code> responses (which the client would
+probably ignore) are sent.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.store" class="method"><a class="src rightside" href="../src/imap/client.rs.html#869-880">Source</a><h4 class="code-header">pub fn <a href="#method.store" class="fn">store</a>&lt;S1, S2&gt;(
+    &amp;mut self,
+    sequence_set: S1,
+    query: S2,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="types/struct.Fetch.html" title="struct imap::types::Fetch">Fetch</a>&gt;&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;<div class="where">where
+    S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+    S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,</div></h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.4.6"><code>STORE</code> command</a> alters data
+associated with a message in the mailbox.  Normally, <code>STORE</code> will return the updated value
+of the data with an untagged FETCH response.  A suffix of <code>.SILENT</code> in <code>query</code> prevents the
+untagged <code>FETCH</code>, and the server assumes that the client has determined the updated value
+itself or does not care about the updated value.</p>
+<p>The currently defined data items that can be stored are:</p>
+<ul>
+<li>
+<p><code>FLAGS &lt;flag list&gt;</code>:</p>
+<p>Replace the flags for the message (other than <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a>) with the argument.  The
+new value of the flags is returned as if a <code>FETCH</code> of those flags was done.</p>
+</li>
+<li>
+<p><code>FLAGS.SILENT &lt;flag list&gt;</code>: Equivalent to <code>FLAGS</code>, but without returning a new value.</p>
+</li>
+<li>
+<p><code>+FLAGS &lt;flag list&gt;</code></p>
+<p>Add the argument to the flags for the message.  The new value of the flags is returned
+as if a <code>FETCH</code> of those flags was done.</p>
+</li>
+<li>
+<p><code>+FLAGS.SILENT &lt;flag list&gt;</code>: Equivalent to <code>+FLAGS</code>, but without returning a new value.</p>
+</li>
+<li>
+<p><code>-FLAGS &lt;flag list&gt;</code></p>
+<p>Remove the argument from the flags for the message.  The new value of the flags is
+returned as if a <code>FETCH</code> of those flags was done.</p>
+</li>
+<li>
+<p><code>-FLAGS.SILENT &lt;flag list&gt;</code>: Equivalent to <code>-FLAGS</code>, but without returning a new value.</p>
+</li>
+</ul>
+<p>In all cases, <code>&lt;flag list&gt;</code> is a space-separated list enclosed in parentheses.</p>
+<h5 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h5>
+<p>Delete a message:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>delete(seq: imap::types::Seq, s: <span class="kw-2">&amp;mut </span>Session&lt;TcpStream&gt;) -&gt; imap::error::Result&lt;()&gt; {
+    s.store(<span class="macro">format!</span>(<span class="string">"{}"</span>, seq), <span class="string">"+FLAGS (\\Deleted)"</span>)<span class="question-mark">?</span>;
+    s.expunge()<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div></div></details><details class="toggle method-toggle" open><summary><section id="method.uid_store" class="method"><a class="src rightside" href="../src/imap/client.rs.html#884-895">Source</a><h4 class="code-header">pub fn <a href="#method.uid_store" class="fn">uid_store</a>&lt;S1, S2&gt;(
+    &amp;mut self,
+    uid_set: S1,
+    query: S2,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="types/struct.Fetch.html" title="struct imap::types::Fetch">Fetch</a>&gt;&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;<div class="where">where
+    S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+    S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,</div></h4></section></summary><div class="docblock"><p>Equivalent to <a href="struct.Session.html#method.store" title="method imap::Session::store"><code>Session::store</code></a>, except that all identifiers in <code>sequence_set</code> are
+<a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a>s. See also the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code> command</a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.copy" class="method"><a class="src rightside" href="../src/imap/client.rs.html#904-914">Source</a><h4 class="code-header">pub fn <a href="#method.copy" class="fn">copy</a>&lt;S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    sequence_set: S1,
+    mailbox_name: S2,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.4.7"><code>COPY</code> command</a> copies the
+specified message(s) to the end of the specified destination mailbox.  The flags and
+internal date of the message(s) will generally be preserved, and <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a> will
+generally be set, in the copy.</p>
+<p>If the <code>COPY</code> command is unsuccessful for any reason, the server restores the destination
+mailbox to its state before the <code>COPY</code> attempt.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uid_copy" class="method"><a class="src rightside" href="../src/imap/client.rs.html#918-928">Source</a><h4 class="code-header">pub fn <a href="#method.uid_copy" class="fn">uid_copy</a>&lt;S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    uid_set: S1,
+    mailbox_name: S2,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Equivalent to <a href="struct.Session.html#method.copy" title="method imap::Session::copy"><code>Session::copy</code></a>, except that all identifiers in <code>sequence_set</code> are
+<a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a>s. See also the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code> command</a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.mv" class="method"><a class="src rightside" href="../src/imap/client.rs.html#960-970">Source</a><h4 class="code-header">pub fn <a href="#method.mv" class="fn">mv</a>&lt;S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    sequence_set: S1,
+    mailbox_name: S2,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc6851#section-3.1"><code>MOVE</code> command</a> takes two
+arguments: a sequence set and a named mailbox. Each message included in the set is moved,
+rather than copied, from the selected (source) mailbox to the named (target) mailbox.</p>
+<p>This means that a new message is created in the target mailbox with a
+new <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a>, the original message is removed from the source mailbox, and
+it appears to the client as a single action.  This has the same
+effect for each message as this sequence:</p>
+<ol>
+<li>COPY</li>
+<li>STORE +FLAGS.SILENT \DELETED</li>
+<li>EXPUNGE</li>
+</ol>
+<p>This command requires that the server supports <a href="https://tools.ietf.org/html/rfc6851">RFC
+6851</a> as indicated by the <code>MOVE</code> capability (see
+<a href="struct.Session.html#method.capabilities" title="method imap::Session::capabilities"><code>Session::capabilities</code></a>).</p>
+<p>Although the effect of the <code>MOVE</code> is the same as the preceding steps, the semantics are not
+identical: The intermediate states produced by those steps do not occur, and the response
+codes are different.  In particular, though the <code>COPY</code> and <code>EXPUNGE</code> response codes will be
+returned, response codes for a <code>store</code> will not be generated and <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> will not
+be set for any message.</p>
+<p>Because a <code>MOVE</code> applies to a set of messages, it might fail partway through the set.
+Regardless of whether the command is successful in moving the entire set, each individual
+message will either be moved or unaffected.  The server will leave each message in a state
+where it is in at least one of the source or target mailboxes (no message can be lost or
+orphaned).  The server will generally not leave any message in both mailboxes (it would be
+bad for a partial failure to result in a bunch of duplicate messages).  This is true even
+if the server returns with <a href="error/enum.Error.html#variant.No" title="variant imap::error::Error::No"><code>Error::No</code></a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uid_mv" class="method"><a class="src rightside" href="../src/imap/client.rs.html#976-986">Source</a><h4 class="code-header">pub fn <a href="#method.uid_mv" class="fn">uid_mv</a>&lt;S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    uid_set: S1,
+    mailbox_name: S2,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Equivalent to <a href="struct.Session.html#method.copy" title="method imap::Session::copy"><code>Session::copy</code></a>, except that all identifiers in <code>sequence_set</code> are
+<a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a>s. See also the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code> command</a>
+and the <a href="https://tools.ietf.org/html/rfc6851#section-3.3">semantics of <code>MOVE</code> and <code>UID MOVE</code></a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.list" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1019-1030">Source</a><h4 class="code-header">pub fn <a href="#method.list" class="fn">list</a>(
+    &amp;mut self,
+    reference_name: <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+    mailbox_pattern: <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="types/struct.Name.html" title="struct imap::types::Name">Name</a>&gt;&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.8"><code>LIST</code> command</a> returns a subset of
+names from the complete set of all names available to the client.  It returns the name
+attributes, hierarchy delimiter, and name of each such name; see <a href="types/struct.Name.html" title="struct imap::types::Name"><code>Name</code></a> for more detail.</p>
+<p>If <code>reference_name</code> is <code>None</code> (or <code>""</code>), the currently selected mailbox is used.
+The returned mailbox names must match the supplied <code>mailbox_pattern</code>.  A non-empty
+reference name argument is the name of a mailbox or a level of mailbox hierarchy, and
+indicates the context in which the mailbox name is interpreted.</p>
+<p>If <code>mailbox_pattern</code> is <code>None</code> (or <code>""</code>), it is a special request to return the hierarchy
+delimiter and the root name of the name given in the reference.  The value returned as the
+root MAY be the empty string if the reference is non-rooted or is an empty string.  In all
+cases, a hierarchy delimiter (or <code>NIL</code> if there is no hierarchy) is returned.  This permits
+a client to get the hierarchy delimiter (or find out that the mailbox names are flat) even
+when no mailboxes by that name currently exist.</p>
+<p>The reference and mailbox name arguments are interpreted into a canonical form that
+represents an unambiguous left-to-right hierarchy.  The returned mailbox names will be in
+the interpreted form.</p>
+<p>The character <code>*</code> is a wildcard, and matches zero or more characters at this position.  The
+character <code>%</code> is similar to <code>*</code>, but it does not match a hierarchy delimiter.  If the <code>%</code>
+wildcard is the last character of a mailbox name argument, matching levels of hierarchy are
+also returned.  If these levels of hierarchy are not also selectable mailboxes, they are
+returned with <a href="types/enum.NameAttribute.html#variant.NoSelect" title="variant imap::types::NameAttribute::NoSelect"><code>NameAttribute::NoSelect</code></a>.</p>
+<p>The special name <code>INBOX</code> is included if <code>INBOX</code> is supported by this server for this user
+and if the uppercase string <code>INBOX</code> matches the interpreted reference and mailbox name
+arguments with wildcards.  The criteria for omitting <code>INBOX</code> is whether <code>SELECT INBOX</code> will
+return failure; it is not relevant whether the user’s real <code>INBOX</code> resides on this or some
+other server.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.lsub" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1047-1058">Source</a><h4 class="code-header">pub fn <a href="#method.lsub" class="fn">lsub</a>(
+    &amp;mut self,
+    reference_name: <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+    mailbox_pattern: <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="types/struct.ZeroCopy.html" title="struct imap::types::ZeroCopy">ZeroCopy</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="struct" href="types/struct.Name.html" title="struct imap::types::Name">Name</a>&gt;&gt;, <a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.9"><code>LSUB</code> command</a> returns a subset of
+names from the set of names that the user has declared as being “active” or “subscribed”.
+The arguments to this method the same as for <a href="struct.Session.html#method.list" title="method imap::Session::list"><code>Session::list</code></a>.</p>
+<p>The returned <a href="types/struct.Name.html" title="struct imap::types::Name"><code>Name</code></a>s MAY contain different mailbox flags from response to
+<a href="struct.Session.html#method.list" title="method imap::Session::list"><code>Session::list</code></a>.  If this should happen, the flags returned by <a href="struct.Session.html#method.list" title="method imap::Session::list"><code>Session::list</code></a> are
+considered more authoritative.</p>
+<p>A special situation occurs when invoking <code>lsub</code> with the <code>%</code> wildcard. Consider what
+happens if <code>foo/bar</code> (with a hierarchy delimiter of <code>/</code>) is subscribed but <code>foo</code> is not.  A
+<code>%</code> wildcard to <code>lsub</code> must return <code>foo</code>, not <code>foo/bar</code>, and it will be flagged with
+<a href="types/enum.NameAttribute.html#variant.NoSelect" title="variant imap::types::NameAttribute::NoSelect"><code>NameAttribute::NoSelect</code></a>.</p>
+<p>The server will not unilaterally remove an existing mailbox name from the subscription list
+even if a mailbox by that name no longer exists.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.status" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1094-1105">Source</a><h4 class="code-header">pub fn <a href="#method.status" class="fn">status</a>&lt;S1: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, S2: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    mailbox_name: S1,
+    data_items: S2,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="types/struct.Mailbox.html" title="struct imap::types::Mailbox">Mailbox</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.10"><code>STATUS</code> command</a> requests the
+status of the indicated mailbox. It does not change the currently selected mailbox, nor
+does it affect the state of any messages in the queried mailbox (in particular, <code>status</code>
+will not cause messages to lose <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a>).</p>
+<p><code>status</code> provides an alternative to opening a second <a href="struct.Session.html" title="struct imap::Session"><code>Session</code></a> and using
+<a href="struct.Session.html#method.examine" title="method imap::Session::examine"><code>Session::examine</code></a> on a mailbox to query that mailbox’s status without deselecting the
+current mailbox in the first <code>Session</code>.</p>
+<p>Unlike <a href="struct.Session.html#method.list" title="method imap::Session::list"><code>Session::list</code></a>, <code>status</code> is not guaranteed to be fast in its response.  Under
+certain circumstances, it can be quite slow.  In some implementations, the server is
+obliged to open the mailbox read-only internally to obtain certain status information.
+Also unlike <a href="struct.Session.html#method.list" title="method imap::Session::list"><code>Session::list</code></a>, <code>status</code> does not accept wildcards.</p>
+<blockquote>
+<p>Note: <code>status</code> is intended to access the status of mailboxes other than the currently
+selected mailbox.  Because <code>status</code> can cause the mailbox to be opened internally, and
+because this information is available by other means on the selected mailbox, <code>status</code>
+SHOULD NOT be used on the currently selected mailbox.</p>
+</blockquote>
+<p>The STATUS command MUST NOT be used as a “check for new messages in the selected mailbox”
+operation (refer to sections <a href="https://tools.ietf.org/html/rfc3501#section-7">7</a>,
+<a href="https://tools.ietf.org/html/rfc3501#section-7.3.1">7.3.1</a>, and
+<a href="https://tools.ietf.org/html/rfc3501#section-7.3.2">7.3.2</a> for more information about the
+proper method for new message checking).</p>
+<p>The currently defined status data items that can be requested are:</p>
+<ul>
+<li><code>MESSAGES</code>: The number of messages in the mailbox.</li>
+<li><code>RECENT</code>: The number of messages with <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a> set.</li>
+<li><code>UIDNEXT</code>: The next <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a> of the mailbox.</li>
+<li><code>UIDVALIDITY</code>: The unique identifier validity value of the mailbox (see <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a>).</li>
+<li><code>UNSEEN</code>: The number of messages which do not have <a href="types/enum.Flag.html#variant.Seen" title="variant imap::types::Flag::Seen"><code>Flag::Seen</code></a> set.</li>
+</ul>
+<p><code>data_items</code> is a space-separated list enclosed in parentheses.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.idle" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1125-1127">Source</a><h4 class="code-header">pub fn <a href="#method.idle" class="fn">idle</a>(&amp;mut self) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="extensions/idle/struct.Handle.html" title="struct imap::extensions::idle::Handle">Handle</a>&lt;'_, T&gt;&gt;</h4></section></summary><div class="docblock"><p>This method returns a handle that lets you use the <a href="https://tools.ietf.org/html/rfc2177#section-3"><code>IDLE</code>
+command</a> to listen for changes to the
+currently selected mailbox.</p>
+<p>It’s often more desirable to have the server transmit updates to the client in real time.
+This allows a user to see new mail immediately.  It also helps some real-time applications
+based on IMAP, which might otherwise need to poll extremely often (such as every few
+seconds).  While the spec actually does allow a server to push <code>EXISTS</code> responses
+aysynchronously, a client can’t expect this behaviour and must poll.  This method provides
+you with such a mechanism.</p>
+<p><code>idle</code> may be used with any server that returns <code>IDLE</code> as one of the supported capabilities
+(see <a href="struct.Session.html#method.capabilities" title="method imap::Session::capabilities"><code>Session::capabilities</code></a>). If the server does not advertise the <code>IDLE</code> capability,
+the client MUST NOT use <code>idle</code> and must instead poll for mailbox updates.  In particular,
+the client MUST continue to be able to accept unsolicited untagged responses to ANY
+command, as specified in the base IMAP specification.</p>
+<p>See <a href="extensions/idle/struct.Handle.html" title="struct imap::extensions::idle::Handle"><code>extensions::idle::Handle</code></a> for details.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.append" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1148-1150">Source</a><h4 class="code-header">pub fn <a href="#method.append" class="fn">append</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, B: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;[<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.u8.html">u8</a>]&gt;&gt;(
+    &amp;mut self,
+    mailbox: S,
+    content: B,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.11"><code>APPEND</code> command</a> appends
+<code>content</code> as a new message to the end of the specified destination <code>mailbox</code>.  This
+argument SHOULD be in the format of an <a href="https://tools.ietf.org/html/rfc2822">RFC-2822</a>
+message.</p>
+<blockquote>
+<p>Note: There MAY be exceptions, e.g., draft messages, in which required RFC-2822 header
+lines are omitted in the message literal argument to <code>append</code>.  The full implications of
+doing so MUST be understood and carefully weighed.</p>
+</blockquote>
+<p>If the append is unsuccessful for any reason, the mailbox is restored to its state before
+the append attempt; no partial appending will happen.</p>
+<p>If the destination <code>mailbox</code> does not exist, the server returns an error, and does not
+automatically create the mailbox.</p>
+<p>If the mailbox is currently selected, the normal new message actions will generally occur.
+Specifically, the server will generally notify the client immediately via an untagged
+<code>EXISTS</code> response.  If the server does not do so, the client MAY issue a <code>NOOP</code> command (or
+failing that, a <code>CHECK</code> command) after one or more <code>APPEND</code> commands.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.append_with_flags" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1162-1169">Source</a><h4 class="code-header">pub fn <a href="#method.append_with_flags" class="fn">append_with_flags</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, B: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;[<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.u8.html">u8</a>]&gt;&gt;(
+    &amp;mut self,
+    mailbox: S,
+    content: B,
+    flags: &amp;[<a class="enum" href="types/enum.Flag.html" title="enum imap::types::Flag">Flag</a>&lt;'_&gt;],
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.11"><code>APPEND</code> command</a> can take
+an optional FLAGS parameter to set the flags on the new message.</p>
+<blockquote>
+<p>If a flag parenthesized list is specified, the flags SHOULD be set
+in the resulting message; otherwise, the flag list of the
+resulting message is set to empty by default.  In either case, the
+Recent flag is also set.</p>
+</blockquote>
+<p>The <a href="https://tools.ietf.org/html/rfc3501#section-2.3.2"><code>\Recent</code> flag</a> is not
+allowed as an argument to <code>APPEND</code> and will be filtered out if present in <code>flags</code>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.append_with_flags_and_date" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1187-1222">Source</a><h4 class="code-header">pub fn <a href="#method.append_with_flags_and_date" class="fn">append_with_flags_and_date</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;, B: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;[<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.u8.html">u8</a>]&gt;&gt;(
+    &amp;mut self,
+    mailbox: S,
+    content: B,
+    flags: &amp;[<a class="enum" href="types/enum.Flag.html" title="enum imap::types::Flag">Flag</a>&lt;'_&gt;],
+    date: impl <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="https://doc.rust-lang.org/1.96.1/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://docs.rs/chrono/latest/chrono/datetime/struct.DateTime.html" title="struct chrono::datetime::DateTime">DateTime</a>&lt;<a class="struct" href="https://docs.rs/chrono/latest/chrono/offset/fixed/struct.FixedOffset.html" title="struct chrono::offset::fixed::FixedOffset">FixedOffset</a>&gt;&gt;&gt;,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.3.11"><code>APPEND</code> command</a> can take
+an optional FLAGS parameter to set the flags on the new message.</p>
+<blockquote>
+<p>If a flag parenthesized list is specified, the flags SHOULD be set
+in the resulting message; otherwise, the flag list of the
+resulting message is set to empty by default.  In either case, the
+Recent flag is also set.</p>
+</blockquote>
+<p>The <a href="https://tools.ietf.org/html/rfc3501#section-2.3.2"><code>\Recent</code> flag</a> is not
+allowed as an argument to <code>APPEND</code> and will be filtered out if present in <code>flags</code>.</p>
+<p>Pass a date in order to set the date that the message was originally sent.</p>
+<blockquote>
+<p>If a date-time is specified, the internal date SHOULD be set in
+the resulting message; otherwise, the internal date of the
+resulting message is set to the current date and time by default.</p>
+</blockquote>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.search" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1268-1271">Source</a><h4 class="code-header">pub fn <a href="#method.search" class="fn">search</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, query: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/std/collections/hash/set/struct.HashSet.html" title="struct std::collections::hash::set::HashSet">HashSet</a>&lt;<a class="type" href="types/type.Seq.html" title="type imap::types::Seq">Seq</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>The <a href="https://tools.ietf.org/html/rfc3501#section-6.4.4"><code>SEARCH</code> command</a> searches the
+mailbox for messages that match the given <code>query</code>.  <code>query</code> consist of one or more search
+keys separated by spaces.  The response from the server contains a listing of <a href="types/type.Seq.html" title="type imap::types::Seq"><code>Seq</code></a>s
+corresponding to those messages that match the searching criteria.</p>
+<p>When multiple search keys are specified, the result is the intersection of all the messages
+that match those keys.  Or, in other words, only messages that match <em>all</em> the keys. For
+example, the criteria</p>
+<div class="example-wrap"><pre class="language-text"><code>DELETED FROM &quot;SMITH&quot; SINCE 1-Feb-1994</code></pre></div>
+<p>refers to all deleted messages from Smith that were placed in the mailbox since February 1,
+1994.  A search key can also be a parenthesized list of one or more search keys (e.g., for
+use with the <code>OR</code> and <code>NOT</code> keys).</p>
+<p>In all search keys that use strings, a message matches the key if the string is a substring
+of the field.  The matching is case-insensitive.</p>
+<p>Below is a selection of common search keys.  The full list can be found in the
+specification of the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.4"><code>SEARCH command</code></a>.</p>
+<ul>
+<li>
+<p><code>NEW</code>: Messages that have <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a> set but not <a href="types/enum.Flag.html#variant.Seen" title="variant imap::types::Flag::Seen"><code>Flag::Seen</code></a>. This is functionally equivalent to <code>(RECENT UNSEEN)</code>.</p>
+</li>
+<li>
+<p><code>OLD</code>: Messages that do not have <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a> set.  This is functionally equivalent to <code>NOT RECENT</code> (as opposed to <code>NOT NEW</code>).</p>
+</li>
+<li>
+<p><code>RECENT</code>: Messages that have <a href="types/enum.Flag.html#variant.Recent" title="variant imap::types::Flag::Recent"><code>Flag::Recent</code></a> set.</p>
+</li>
+<li>
+<p><code>ANSWERED</code>: Messages with <a href="types/enum.Flag.html#variant.Answered" title="variant imap::types::Flag::Answered"><code>Flag::Answered</code></a> set.</p>
+</li>
+<li>
+<p><code>DELETED</code>: Messages with <a href="types/enum.Flag.html#variant.Deleted" title="variant imap::types::Flag::Deleted"><code>Flag::Deleted</code></a> set.</p>
+</li>
+<li>
+<p><code>DRAFT</code>: Messages with <a href="types/enum.Flag.html#variant.Draft" title="variant imap::types::Flag::Draft"><code>Flag::Draft</code></a> set.</p>
+</li>
+<li>
+<p><code>FLAGGED</code>: Messages with <a href="types/enum.Flag.html#variant.Flagged" title="variant imap::types::Flag::Flagged"><code>Flag::Flagged</code></a> set.</p>
+</li>
+<li>
+<p><code>SEEN</code>: Messages that have <a href="types/enum.Flag.html#variant.Seen" title="variant imap::types::Flag::Seen"><code>Flag::Seen</code></a> set.</p>
+</li>
+<li>
+<p><code>&lt;sequence set&gt;</code>: Messages with message sequence numbers corresponding to the specified message sequence number set.</p>
+</li>
+<li>
+<p><code>UID &lt;sequence set&gt;</code>: Messages with <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a> corresponding to the specified unique identifier set.  Sequence set ranges are permitted.</p>
+</li>
+<li>
+<p><code>SUBJECT &lt;string&gt;</code>: Messages that contain the specified string in the envelope structure’s <code>SUBJECT</code> field.</p>
+</li>
+<li>
+<p><code>BODY &lt;string&gt;</code>: Messages that contain the specified string in the body of the message.</p>
+</li>
+<li>
+<p><code>FROM &lt;string&gt;</code>: Messages that contain the specified string in the envelope structure’s <code>FROM</code> field.</p>
+</li>
+<li>
+<p><code>TO &lt;string&gt;</code>: Messages that contain the specified string in the envelope structure’s <code>TO</code> field.</p>
+</li>
+<li>
+<p><code>NOT &lt;search-key&gt;</code>: Messages that do not match the specified search key.</p>
+</li>
+<li>
+<p><code>OR &lt;search-key1&gt; &lt;search-key2&gt;</code>: Messages that match either search key.</p>
+</li>
+<li>
+<p><code>BEFORE &lt;date&gt;</code>: Messages whose internal date (disregarding time and timezone) is earlier than the specified date.</p>
+</li>
+<li>
+<p><code>SINCE &lt;date&gt;</code>: Messages whose internal date (disregarding time and timezone) is within or later than the specified date.</p>
+</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uid_search" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1276-1279">Source</a><h4 class="code-header">pub fn <a href="#method.uid_search" class="fn">uid_search</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, query: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/std/collections/hash/set/struct.HashSet.html" title="struct std::collections::hash::set::HashSet">HashSet</a>&lt;<a class="type" href="types/type.Uid.html" title="type imap::types::Uid">Uid</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Equivalent to <a href="struct.Session.html#method.search" title="method imap::Session::search"><code>Session::search</code></a>, except that the returned identifiers
+are <a href="types/type.Uid.html" title="type imap::types::Uid"><code>Uid</code></a> instead of <a href="types/type.Seq.html" title="type imap::types::Seq"><code>Seq</code></a>. See also the <a href="https://tools.ietf.org/html/rfc3501#section-6.4.8"><code>UID</code>
+command</a>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_command_and_check_ok" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1283-1285">Source</a><h4 class="code-header">pub fn <a href="#method.run_command_and_check_ok" class="fn">run_command_and_check_ok</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    command: S,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Runs a command and checks if it returns OK.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_command" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1288-1290">Source</a><h4 class="code-header">pub fn <a href="#method.run_command" class="fn">run_command</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(&amp;mut self, untagged_command: S) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Runs any command passed to it.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_command_and_read_response" class="method"><a class="src rightside" href="../src/imap/client.rs.html#1298-1304">Source</a><h4 class="code-header">pub fn <a href="#method.run_command_and_read_response" class="fn">run_command_and_read_response</a>&lt;S: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.str.html">str</a>&gt;&gt;(
+    &amp;mut self,
+    untagged_command: S,
+) -&gt; <a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.96.1/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.u8.html">u8</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Run a raw IMAP command and read back its response.</p>
+<p>Note that the server <em>is</em> allowed to unilaterally send things to the client for messages in
+a selected mailbox whose status has changed. See the note on <a href="https://tools.ietf.org/html/rfc3501#section-7">unilateral server responses
+in RFC 3501</a>. This means that you <em>may</em> see
+additional untagged <code>RECENT</code>, <code>EXISTS</code>, <code>FETCH</code>, and <code>EXPUNGE</code> responses!</p>
+</div></details></div></details></div><h2 id="trait-implementations" class="section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-Debug-for-Session%3CT%3E" class="impl"><a class="src rightside" href="../src/imap/client.rs.html#110">Source</a><a href="#impl-Debug-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> + <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Read.html" title="trait std::io::Read">Read</a> + <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Write.html" title="trait std::io::Write">Write</a>&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.fmt" class="method trait-impl"><a class="src rightside" href="../src/imap/client.rs.html#110">Source</a><a href="#method.fmt" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/fmt/trait.Debug.html#tymethod.fmt" class="fn">fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.96.1/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>&lt;'_&gt;) -&gt; <a class="type" href="https://doc.rust-lang.org/1.96.1/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></h4></section></summary><div class='docblock'>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/1.96.1/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></div></details></div></details><details class="toggle implementors-toggle" open><summary><section id="impl-DerefMut-for-Session%3CT%3E" class="impl"><a class="src rightside" href="../src/imap/client.rs.html#170-174">Source</a><a href="#impl-DerefMut-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Read.html" title="trait std::io::Read">Read</a> + <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Write.html" title="trait std::io::Write">Write</a>&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.DerefMut.html" title="trait core::ops::deref::DerefMut">DerefMut</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.deref_mut" class="method trait-impl"><a class="src rightside" href="../src/imap/client.rs.html#171-173">Source</a><a href="#method.deref_mut" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.DerefMut.html#tymethod.deref_mut" class="fn">deref_mut</a>(&amp;mut self) -&gt; &amp;mut Connection&lt;T&gt;</h4></section></summary><div class='docblock'>Mutably dereferences the value.</div></details></div></details><details class="toggle implementors-toggle" open><summary><section id="impl-__Deref-for-Session%3CT%3E" class="impl"><a class="src rightside" href="../src/imap/client.rs.html#162-168">Source</a><a href="#impl-__Deref-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Read.html" title="trait std::io::Read">Read</a> + <a class="trait" href="https://doc.rust-lang.org/1.96.1/std/io/trait.Write.html" title="trait std::io::Write">Write</a>&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.Deref.html" title="trait core::ops::deref::Deref">Deref</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;</h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Target" class="associatedtype trait-impl"><a class="src rightside" href="../src/imap/client.rs.html#163">Source</a><a href="#associatedtype.Target" class="anchor">§</a><h4 class="code-header">type <a href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.Deref.html#associatedtype.Target" class="associatedtype">Target</a> = Connection&lt;T&gt;</h4></section></summary><div class='docblock'>The resulting type after dereferencing.</div></details><details class="toggle method-toggle" open><summary><section id="method.deref" class="method trait-impl"><a class="src rightside" href="../src/imap/client.rs.html#165-167">Source</a><a href="#method.deref" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.Deref.html#tymethod.deref" class="fn">deref</a>(&amp;self) -&gt; &amp;Connection&lt;T&gt;</h4></section></summary><div class='docblock'>Dereferences the value.</div></details></div></details></div><h2 id="synthetic-implementations" class="section-header">Auto Trait Implementations<a href="#synthetic-implementations" class="anchor">§</a></h2><div id="synthetic-implementations-list"><section id="impl-Freeze-for-Session%3CT%3E" class="impl"><a href="#impl-Freeze-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Freeze.html" title="trait core::marker::Freeze">Freeze</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;<div class="where">where
+    T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Freeze.html" title="trait core::marker::Freeze">Freeze</a>,</div></h3></section><section id="impl-RefUnwindSafe-for-Session%3CT%3E" class="impl"><a href="#impl-RefUnwindSafe-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/panic/unwind_safe/trait.RefUnwindSafe.html" title="trait core::panic::unwind_safe::RefUnwindSafe">RefUnwindSafe</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;<div class="where">where
+    T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/panic/unwind_safe/trait.RefUnwindSafe.html" title="trait core::panic::unwind_safe::RefUnwindSafe">RefUnwindSafe</a>,</div></h3></section><section id="impl-Send-for-Session%3CT%3E" class="impl"><a href="#impl-Send-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;<div class="where">where
+    T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a>,</div></h3></section><section id="impl-Sync-for-Session%3CT%3E" class="impl"><a href="#impl-Sync-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; !<a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;</h3></section><section id="impl-Unpin-for-Session%3CT%3E" class="impl"><a href="#impl-Unpin-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Unpin.html" title="trait core::marker::Unpin">Unpin</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;<div class="where">where
+    T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Unpin.html" title="trait core::marker::Unpin">Unpin</a>,</div></h3></section><section id="impl-UnsafeUnpin-for-Session%3CT%3E" class="impl"><a href="#impl-UnsafeUnpin-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.UnsafeUnpin.html" title="trait core::marker::UnsafeUnpin">UnsafeUnpin</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;<div class="where">where
+    T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.UnsafeUnpin.html" title="trait core::marker::UnsafeUnpin">UnsafeUnpin</a>,</div></h3></section><section id="impl-UnwindSafe-for-Session%3CT%3E" class="impl"><a href="#impl-UnwindSafe-for-Session%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/panic/unwind_safe/trait.UnwindSafe.html" title="trait core::panic::unwind_safe::UnwindSafe">UnwindSafe</a> for <a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a>&lt;T&gt;<div class="where">where
+    T: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/panic/unwind_safe/trait.UnwindSafe.html" title="trait core::panic::unwind_safe::UnwindSafe">UnwindSafe</a>,</div></h3></section></div><h2 id="blanket-implementations" class="section-header">Blanket Implementations<a href="#blanket-implementations" class="anchor">§</a></h2><div id="blanket-implementations-list"><details class="toggle implementors-toggle"><summary><section id="impl-Any-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/any.rs.html#141">Source</a><a href="#impl-Any-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/any/trait.Any.html" title="trait core::any::Any">Any</a> for T<div class="where">where
+    T: 'static + ?<a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.type_id" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/any.rs.html#142">Source</a><a href="#method.type_id" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/any/trait.Any.html#tymethod.type_id" class="fn">type_id</a>(&amp;self) -&gt; <a class="struct" href="https://doc.rust-lang.org/1.96.1/core/any/struct.TypeId.html" title="struct core::any::TypeId">TypeId</a></h4></section></summary><div class='docblock'>Gets the <code>TypeId</code> of <code>self</code>. <a href="https://doc.rust-lang.org/1.96.1/core/any/trait.Any.html#tymethod.type_id">Read more</a></div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-Borrow%3CT%3E-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/borrow.rs.html#212">Source</a><a href="#impl-Borrow%3CT%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/borrow/trait.Borrow.html" title="trait core::borrow::Borrow">Borrow</a>&lt;T&gt; for T<div class="where">where
+    T: ?<a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.borrow" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/borrow.rs.html#214">Source</a><a href="#method.borrow" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/borrow/trait.Borrow.html#tymethod.borrow" class="fn">borrow</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.reference.html">&amp;T</a></h4></section></summary><div class='docblock'>Immutably borrows from an owned value. <a href="https://doc.rust-lang.org/1.96.1/core/borrow/trait.Borrow.html#tymethod.borrow">Read more</a></div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-BorrowMut%3CT%3E-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/borrow.rs.html#221">Source</a><a href="#impl-BorrowMut%3CT%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/borrow/trait.BorrowMut.html" title="trait core::borrow::BorrowMut">BorrowMut</a>&lt;T&gt; for T<div class="where">where
+    T: ?<a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.borrow_mut" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/borrow.rs.html#222">Source</a><a href="#method.borrow_mut" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/borrow/trait.BorrowMut.html#tymethod.borrow_mut" class="fn">borrow_mut</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.96.1/std/primitive.reference.html">&amp;mut T</a></h4></section></summary><div class='docblock'>Mutably borrows from an owned value. <a href="https://doc.rust-lang.org/1.96.1/core/borrow/trait.BorrowMut.html#tymethod.borrow_mut">Read more</a></div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-From%3CT%3E-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#785">Source</a><a href="#impl-From%3CT%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.From.html" title="trait core::convert::From">From</a>&lt;T&gt; for T</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.from" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#788">Source</a><a href="#method.from" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.From.html#tymethod.from" class="fn">from</a>(t: T) -&gt; T</h4></section></summary><div class="docblock"><p>Returns the argument unchanged.</p>
+</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-Into%3CU%3E-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#767-769">Source</a><a href="#impl-Into%3CU%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T, U&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;U&gt; for T<div class="where">where
+    U: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.From.html" title="trait core::convert::From">From</a>&lt;T&gt;,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.into" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#777">Source</a><a href="#method.into" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.Into.html#tymethod.into" class="fn">into</a>(self) -&gt; U</h4></section></summary><div class="docblock"><p>Calls <code>U::from(self)</code>.</p>
+<p>That is, this conversion is whatever the implementation of
+<code><a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.From.html" title="trait core::convert::From">From</a>&lt;T&gt; for U</code> chooses to do.</p>
+</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-Receiver-for-P" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/ops/deref.rs.html#378-380">Source</a><a href="#impl-Receiver-for-P" class="anchor">§</a><h3 class="code-header">impl&lt;P, T&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.Receiver.html" title="trait core::ops::deref::Receiver">Receiver</a> for P<div class="where">where
+    P: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.Deref.html" title="trait core::ops::deref::Deref">Deref</a>&lt;Target = T&gt; + ?<a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>,
+    T: ?<a class="trait" href="https://doc.rust-lang.org/1.96.1/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Target-1" class="associatedtype trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/ops/deref.rs.html#382">Source</a><a href="#associatedtype.Target-1" class="anchor">§</a><h4 class="code-header">type <a href="https://doc.rust-lang.org/1.96.1/core/ops/deref/trait.Receiver.html#associatedtype.Target" class="associatedtype">Target</a> = T</h4></section></summary><span class="item-info"><div class="stab unstable"><span class="emoji">🔬</span><span>This is a nightly-only experimental API. (<code>arbitrary_self_types</code>)</span></div></span><div class='docblock'>The target type on which the method may be called.</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-TryFrom%3CU%3E-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#827-829">Source</a><a href="#impl-TryFrom%3CU%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T, U&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html" title="trait core::convert::TryFrom">TryFrom</a>&lt;U&gt; for T<div class="where">where
+    U: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;T&gt;,</div></h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Error-1" class="associatedtype trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#831">Source</a><a href="#associatedtype.Error-1" class="anchor">§</a><h4 class="code-header">type <a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html#associatedtype.Error" class="associatedtype">Error</a> = <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/convert/enum.Infallible.html" title="enum core::convert::Infallible">Infallible</a></h4></section></summary><div class='docblock'>The type returned in the event of a conversion error.</div></details><details class="toggle method-toggle" open><summary><section id="method.try_from" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#834">Source</a><a href="#method.try_from" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html#tymethod.try_from" class="fn">try_from</a>(value: U) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;T, &lt;T as <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html" title="trait core::convert::TryFrom">TryFrom</a>&lt;U&gt;&gt;::<a class="associatedtype" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html#associatedtype.Error" title="type core::convert::TryFrom::Error">Error</a>&gt;</h4></section></summary><div class='docblock'>Performs the conversion.</div></details></div></details><details class="toggle implementors-toggle"><summary><section id="impl-TryInto%3CU%3E-for-T" class="impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#811-813">Source</a><a href="#impl-TryInto%3CU%3E-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T, U&gt; <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryInto.html" title="trait core::convert::TryInto">TryInto</a>&lt;U&gt; for T<div class="where">where
+    U: <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html" title="trait core::convert::TryFrom">TryFrom</a>&lt;T&gt;,</div></h3></section></summary><div class="impl-items"><details class="toggle" open><summary><section id="associatedtype.Error" class="associatedtype trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#815">Source</a><a href="#associatedtype.Error" class="anchor">§</a><h4 class="code-header">type <a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryInto.html#associatedtype.Error" class="associatedtype">Error</a> = &lt;U as <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html" title="trait core::convert::TryFrom">TryFrom</a>&lt;T&gt;&gt;::<a class="associatedtype" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html#associatedtype.Error" title="type core::convert::TryFrom::Error">Error</a></h4></section></summary><div class='docblock'>The type returned in the event of a conversion error.</div></details><details class="toggle method-toggle" open><summary><section id="method.try_into" class="method trait-impl"><a class="src rightside" href="https://doc.rust-lang.org/1.96.1/src/core/convert/mod.rs.html#818">Source</a><a href="#method.try_into" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryInto.html#tymethod.try_into" class="fn">try_into</a>(self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.96.1/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;U, &lt;U as <a class="trait" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html" title="trait core::convert::TryFrom">TryFrom</a>&lt;T&gt;&gt;::<a class="associatedtype" href="https://doc.rust-lang.org/1.96.1/core/convert/trait.TryFrom.html#associatedtype.Error" title="type core::convert::TryFrom::Error">Error</a>&gt;</h4></section></summary><div class='docblock'>Performs the conversion.</div></details></div></details></div></section></div></main></body></html>

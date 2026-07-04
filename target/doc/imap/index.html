@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="This crate lets you connect to and interact with servers that implement the IMAP protocol (RFC 3501 and various extensions). After authenticating with the server, IMAP lets you list, fetch, and search for e-mails, as well as monitor mailboxes for changes. It supports at least the latest three stable Rust releases (possibly even older ones; check the CI results)."><title>imap - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="imap" data-themes="" data-resource-suffix="" data-rustdoc-version="1.96.1 (31fca3adb 2026-06-26)" data-channel="1.96.1" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate imap</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../imap/index.html">imap</a><span class="version">2.4.1</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#opting-out-of-native_tls" title="Opting out of `native_tls`">Opting out of <code>native_tls</code></a></li></ul><h3><a href="#reexports">Crate Items</a></h3><ul class="block"><li><a href="#reexports" title="Re-exports">Re-exports</a></li><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>imap</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/imap/lib.rs.html#1-95">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>This crate lets you connect to and interact with servers that implement the IMAP protocol (<a href="https://tools.ietf.org/html/rfc3501">RFC
+3501</a> and various extensions). After authenticating with
+the server, IMAP lets you list, fetch, and search for e-mails, as well as monitor mailboxes for
+changes. It supports at least the latest three stable Rust releases (possibly even older ones;
+check the <a href="https://travis-ci.com/jonhoo/rust-imap">CI results</a>).</p>
+<p>To connect, use the <a href="fn.connect.html" title="fn imap::connect"><code>connect</code></a> function. This gives you an unauthenticated <a href="struct.Client.html" title="struct imap::Client"><code>Client</code></a>. You can
+then use <a href="struct.Client.html#method.login" title="method imap::Client::login"><code>Client::login</code></a> or <a href="struct.Client.html#method.authenticate" title="method imap::Client::authenticate"><code>Client::authenticate</code></a> to perform username/password or
+challenge/response authentication respectively. This in turn gives you an authenticated
+<a href="struct.Session.html" title="struct imap::Session"><code>Session</code></a>, which lets you access the mailboxes at the server.</p>
+<p>The documentation within this crate borrows heavily from the various RFCs, but should not be
+considered a complete reference. If anything is unclear, follow the links to the RFCs embedded
+in the documentation for the various types and methods and read the raw text there!</p>
+<p>Below is a basic client example. See the <code>examples/</code> directory for more.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">extern crate </span>imap;
+<span class="kw">extern crate </span>native_tls;
+
+<span class="kw">fn </span>fetch_inbox_top() -&gt; imap::error::Result&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt; {
+    <span class="kw">let </span>domain = <span class="string">"imap.example.com"</span>;
+    <span class="kw">let </span>tls = native_tls::TlsConnector::builder().build().unwrap();
+
+    <span class="comment">// we pass in the domain twice to check that the server's TLS
+    // certificate is valid for the domain we're connecting to.
+    </span><span class="kw">let </span>client = imap::connect((domain, <span class="number">993</span>), domain, <span class="kw-2">&amp;</span>tls).unwrap();
+
+    <span class="comment">// the client we have here is unauthenticated.
+    // to do anything useful with the e-mails, we need to log in
+    </span><span class="kw">let </span><span class="kw-2">mut </span>imap_session = client
+        .login(<span class="string">"me@example.com"</span>, <span class="string">"password"</span>)
+        .map_err(|e| e.<span class="number">0</span>)<span class="question-mark">?</span>;
+
+    <span class="comment">// we want to fetch the first email in the INBOX mailbox
+    </span>imap_session.select(<span class="string">"INBOX"</span>)<span class="question-mark">?</span>;
+
+    <span class="comment">// fetch message number 1 in this mailbox, along with its RFC822 field.
+    // RFC 822 dictates the format of the body of e-mails
+    </span><span class="kw">let </span>messages = imap_session.fetch(<span class="string">"1"</span>, <span class="string">"RFC822"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>message = <span class="kw">if let </span><span class="prelude-val">Some</span>(m) = messages.iter().next() {
+        m
+    } <span class="kw">else </span>{
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+    };
+
+    <span class="comment">// extract the message's body
+    </span><span class="kw">let </span>body = message.body().expect(<span class="string">"message did not have a body!"</span>);
+    <span class="kw">let </span>body = std::str::from_utf8(body)
+        .expect(<span class="string">"message was not valid utf-8"</span>)
+        .to_string();
+
+    <span class="comment">// be nice to the server and log out
+    </span>imap_session.logout()<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(body))
+}</code></pre></div><h3 id="opting-out-of-native_tls"><a class="doc-anchor" href="#opting-out-of-native_tls">§</a>Opting out of <code>native_tls</code></h3>
+<p>For situations where using openssl becomes problematic, you can disable the
+default feature which provides integration with the <code>native_tls</code> crate. One major
+reason you might want to do this is cross-compiling. To opt out of native_tls, add
+this to your Cargo.toml file:</p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies.imap]
+version = &quot;&lt;some version&gt;&quot;
+default-features = false</code></pre></div>
+<p>Even without <code>native_tls</code>, you can still use TLS by leveraging the pure Rust <code>rustls</code>
+crate. See the example/rustls.rs file for a working example.</p>
+</div></details><h2 id="reexports" class="section-header">Re-exports<a href="#reexports" class="anchor">§</a></h2><dl class="item-table reexports"><dt id="reexport.Error"><code>pub use error::<a class="enum" href="error/enum.Error.html" title="enum imap::error::Error">Error</a>;</code></dt><dt id="reexport.Result"><code>pub use error::<a class="type" href="error/type.Result.html" title="type imap::error::Result">Result</a>;</code></dt></dl><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="error/index.html" title="mod imap::error">error</a></dt><dd>IMAP error types.</dd><dt><a class="mod" href="extensions/index.html" title="mod imap::extensions">extensions</a></dt><dd>Implementations of various IMAP extensions.</dd><dt><a class="mod" href="types/index.html" title="mod imap::types">types</a></dt><dd>This module contains types used throughout the IMAP protocol.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Client.html" title="struct imap::Client">Client</a></dt><dd>An (unauthenticated) handle to talk to an IMAP server. This is what you get when first
+connecting. A succesfull call to <a href="struct.Client.html#method.login" title="method imap::Client::login"><code>Client::login</code></a> or <a href="struct.Client.html#method.authenticate" title="method imap::Client::authenticate"><code>Client::authenticate</code></a> will return a
+<a href="struct.Session.html" title="struct imap::Session"><code>Session</code></a> instance that provides the usual IMAP methods.</dd><dt><a class="struct" href="struct.Session.html" title="struct imap::Session">Session</a></dt><dd>An authenticated IMAP session providing the usual IMAP commands. This type is what you get from
+a succesful login attempt.</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.Authenticator.html" title="trait imap::Authenticator">Authenticator</a></dt><dd>This trait allows for pluggable authentication schemes. It is used by <code>Client::authenticate</code> to
+<a href="https://tools.ietf.org/html/rfc3501#section-6.2.2">authenticate using SASL</a>.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.connect.html" title="fn imap::connect">connect</a></dt><dd>Connect to a server using a TLS-encrypted connection.</dd><dt><a class="fn" href="fn.connect_starttls.html" title="fn imap::connect_starttls">connect_<wbr>starttls</a></dt><dd>Connect to a server and upgrade to a TLS-encrypted connection.</dd></dl></section></div></main></body></html>

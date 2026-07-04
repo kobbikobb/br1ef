@@ -5,7 +5,16 @@ use native_tls::TlsConnector;
 
 use crate::Item;
 
-pub fn fetch_imap(host: &str, port: u16, username: &str, password: &str) -> Result<Vec<Item>> {
+const GMAIL_CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
+
+static GMAIL_CATEGORIES: &[&str] = &["Social", "Updates", "Promotions", "Forums"];
+
+pub fn list_mailboxes(
+    host: &str,
+    port: u16,
+    username: &str,
+    password: &str,
+) -> Result<Vec<String>> {
     let tls = TlsConnector::builder()
         .build()
         .context("failed to build TLS connector")?;
@@ -18,12 +27,61 @@ pub fn fetch_imap(host: &str, port: u16, username: &str, password: &str) -> Resu
         .map_err(|e| e.0)
         .context("IMAP login failed")?;
 
-    session.select("INBOX").context("failed to select INBOX")?;
+    let mailboxes = session
+        .list(None, Some("*"))
+        .context("failed to list mailboxes")?;
+
+    let mut names: Vec<String> = mailboxes
+        .iter()
+        .map(|m| m.name().to_string())
+        .collect();
+
+    session.logout()?;
+
+    if names.iter().any(|n| n.starts_with("[Gmail]")) {
+        for cat in GMAIL_CATEGORIES {
+            names.push(format!("{GMAIL_CATEGORY_PREFIX}{cat}"));
+        }
+    }
+
+    Ok(names)
+}
+
+pub fn fetch_imap(
+    host: &str,
+    port: u16,
+    username: &str,
+    password: &str,
+    mailbox: &str,
+) -> Result<Vec<Item>> {
+    let tls = TlsConnector::builder()
+        .build()
+        .context("failed to build TLS connector")?;
+
+    let client =
+        imap::connect((host, port), host, &tls).context("failed to connect to IMAP server")?;
+
+    let mut session = client
+        .login(username, password)
+        .map_err(|e| e.0)
+        .context("IMAP login failed")?;
 
     let since = Utc::now() - Duration::days(7);
     let since_str = since.format("%d-%b-%Y").to_string();
+
+    let (search_filter, select_mailbox) = if let Some(category) = mailbox.strip_prefix(GMAIL_CATEGORY_PREFIX) {
+        let label = format!("CATEGORY_{}", category.to_uppercase());
+        (format!("X-GM-LABELS \"{label}\" SINCE {since_str}"), "[Gmail]/All Mail")
+    } else {
+        (format!("SINCE {since_str}"), mailbox)
+    };
+
+    session
+        .select(select_mailbox)
+        .with_context(|| format!("failed to select mailbox \"{select_mailbox}\""))?;
+
     let uids = session
-        .uid_search(format!("SINCE {since_str}"))
+        .uid_search(&search_filter)
         .context("IMAP search failed")?;
 
     if uids.is_empty() {
@@ -57,7 +115,7 @@ pub fn fetch_imap(host: &str, port: u16, username: &str, password: &str) -> Resu
         let body_text = extract_body(&parsed);
 
         items.push(Item {
-            id: uid,
+            id: format!("{select_mailbox}/{uid}"),
             title: subject,
             from,
             body: body_text,

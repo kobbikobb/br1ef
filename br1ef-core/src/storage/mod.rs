@@ -13,4 +13,7 @@ pub trait Storage: Send + Sync {
 
     fn store_digest(&mut self, digest: &Digest) -> anyhow::Result<()>;
     fn get_digest(&self) -> anyhow::Result<Option<Digest>>;
+
+    fn get_selected_mailboxes(&self) -> anyhow::Result<Vec<String>>;
+    fn set_selected_mailboxes(&mut self, mailboxes: &[String]) -> anyhow::Result<()>;
 }
