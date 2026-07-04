@@ -18,6 +18,10 @@ Every change goes through: **Plan → Challenge → Implement → Validate**
 │     • Are there edge cases not handled?           │
 │     • Is there a simpler way?                     │
 │     • Does the DoD actually prove completion?     │
+│     • Use a `general` sub-agent to suggest        │
+│       what unit tests to add for this change.     │
+│       Include edge cases, error paths, and        │
+│       interface contracts.                        │
 ├──────────────────────────────────────────────────┤
 │  3. Implement                                     │
 │     Write the code. Follow code style rules.      │
@@ -48,7 +52,7 @@ If you can't describe how to validate a step, the plan isn't complete.
 - **Every change ends with a PR** — after commits, run `gh pr create`, get it reviewed, then `gh pr merge`. The agent never merges its own PRs unless explicitly told to.
 - **One concept per commit** — keep changes small and reviewable.
 - **Update PLAN.md as you go** — check off items, note blockers.
-- **Follow software engineering best practices** — write tests, handle errors, validate inputs, keep functions small, prefer clarity over cleverness.
+- **Unit tests are mandatory on all changes** — every new function or non-trivial change must include tests. Use the Challenge phase's sub-agent to identify what to test. Exceptions only for pure renames or formatting-only changes.
 - **Never commit PII** — no real email addresses, passwords, tokens, API keys, or personal data in source code. Use `.env` for secrets, `.env.example` for templates.
 - **No comments unless WHY is non-obvious** — never restate code, never narrate plans.
 - **Lean over clever** — less code is better than more abstraction.
