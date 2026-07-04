@@ -29,4 +29,3 @@ pub trait Source {
     fn id(&self) -> &str;
     fn fetch(&self) -> anyhow::Result<Vec<Item>>;
 }
-

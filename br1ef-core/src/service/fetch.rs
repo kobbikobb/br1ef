@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 
+use crate::Item;
 use crate::fetcher;
 use crate::storage::Storage;
-use crate::Item;
 
 fn display_mailbox(name: &str) -> &str {
     if let Some(cat) = name.strip_prefix("@@CATEGORY@@/") {
