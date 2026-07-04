@@ -12,6 +12,9 @@ lint:
 	cargo clippy --workspace -- -D warnings
 
 fmt:
+	cargo fmt
+
+fmt-chk:
 	cargo fmt --check
 
 audit:
