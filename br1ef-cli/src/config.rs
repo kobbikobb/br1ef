@@ -130,7 +130,7 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
 
 fn ask(prompt: &str, current: &str) -> Result<String> {
     let mut input = String::new();
-   
+
     print!(
         "{prompt} (current: {}) : ",
         if current.is_empty() {
