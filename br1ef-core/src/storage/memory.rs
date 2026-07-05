@@ -48,6 +48,7 @@ impl Storage for InMemoryStorage {
 
     fn clear(&mut self) -> Result<()> {
         self.items.clear();
+        self.digest = None;
         Ok(())
     }
 

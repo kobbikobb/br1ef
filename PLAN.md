@@ -121,6 +121,29 @@ IMAP_PASSWORD=your-app-password
 
 **DoD:** `cargo build` passes, `cargo clippy -- -D warnings` clean.
 
+### ✅ Milestone: Delete items command
+
+**DoD:** `br1ef delete-items` shows item count, prompts for confirmation, deletes all items on yes, reports result.
+
+```
+$ br1ef delete-items
+  Delete 12 items? [y/N] y
+  Deleted 12 items.
+```
+
+- [`br1ef-core/src/service/delete.rs`](br1ef-core/src/service/delete.rs) — `delete_items()` counts items, clears storage (including digests), returns count
+- [`br1ef-core/src/service/delete_test.rs`](br1ef-core/src/service/delete_test.rs) — 4 tests: empty, single-source, multi-source, sequential delete
+- [`br1ef-cli/src/main.rs`](br1ef-cli/src/main.rs) — `DeleteItems` command, confirmation prompt via `eq_ignore_ascii_case`, calls service
+- `Storage::clear()` widened to also clear digests in both `SqliteStorage` and `InMemoryStorage`
+
+```
+$ cargo test
+✓ 134 tests pass
+
+$ cargo clippy -- -D warnings
+✓ clean
+```
+
 ## Out of scope for v0.1
 
 - OAuth (app passwords / regular IMAP password is fine)
