@@ -40,6 +40,9 @@ delete-items:
 digest:
 	cargo run digest
 
+daily:
+	cargo run daily
+
 do-it-lady:
 	cargo run -q fetch
 	cargo run -q digest
