@@ -30,6 +30,8 @@ enum Commands {
     Daily,
     /// Configure br1ef preferences
     Config,
+    /// Show stored item counts by source
+    Items,
 }
 
 fn main() -> Result<()> {
@@ -46,6 +48,7 @@ fn main() -> Result<()> {
         Commands::Digest => cmd_digest(&mut storage, &agent),
         Commands::Daily => cmd_daily(&storage),
         Commands::Config => cmd_config(&mut storage),
+        Commands::Items => cmd_items(&storage),
     }
 }
 
@@ -59,6 +62,7 @@ fn print_help() {
     println!("  digest   Digest fetched data into a brief");
     println!("  daily    Show the daily brief");
     println!("  config   Configure br1ef preferences");
+    println!("  items    Show stored item counts by source");
     println!("  help     Show this usage guide");
     println!();
     println!("Setup:");
@@ -129,6 +133,24 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn cmd_items(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
+    let counts = storage.get_item_counts_by_source()?;
+
+    if counts.is_empty() {
+        println!("No items stored. Run `br1ef fetch` first.");
+        return Ok(());
+    }
+
+    let total: usize = counts.iter().map(|(_, c)| c).sum();
+    println!("📦 Items by source:");
+    for (source, count) in &counts {
+        println!("  {} — {}", source, count);
+    }
+    println!("  ─────");
+    println!("  Total: {}", total);
     Ok(())
 }
 

@@ -16,4 +16,6 @@ pub trait Storage: Send + Sync {
 
     fn get_selected_mailboxes(&self) -> anyhow::Result<Vec<String>>;
     fn set_selected_mailboxes(&mut self, mailboxes: &[String]) -> anyhow::Result<()>;
+
+    fn get_item_counts_by_source(&self) -> anyhow::Result<Vec<(String, usize)>>;
 }
