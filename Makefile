@@ -2,6 +2,11 @@
 
 all: check
 
+do-it-lady:
+	cargo run fetch
+	cargo run digest
+	cargo run daily
+
 build:
 	cargo build --workspace
 
