@@ -72,12 +72,15 @@ fn build_prompt(items: &[Item]) -> String {
          Include personal messages from people I know, children's school\n\
          events/notices, personal event invitations, Iceland-specific items\n\
          (taxes, government, utilities, local matters), and anything\n\
-         requiring a response or action from me.\n\n\
-         ## Everything Else (skip if commercial)\n\
+         requiring a response or action from me.\n\
+         If an email is from someone you know but is primarily selling\n\
+         something, treat it as commercial and skip it.\n\n\
+         ## Everything Else\n\
          Briefly mention anything else genuinely interesting, but IGNORE:\n\
          - Commercial emails, marketing, ads, and promotional content\n\
          - LinkedIn notifications and recruitment pitches\n\
-         - Media highlights and news summaries (unless unusually personal)\n\
+         - Media highlights and news summaries (unless they reference you\n\
+           or your family by name)\n\
          - Anything that looks like someone selling something\n\n\
          If nothing needs attention or there are no actionable items, say so.\n\
          Keep it concise, under 200 words.",

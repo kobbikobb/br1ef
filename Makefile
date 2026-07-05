@@ -1,4 +1,4 @@
-.PHONY: all build test lint fmt audit check
+.PHONY: all do-it-lady build test lint fmt audit check
 
 all: check
 
