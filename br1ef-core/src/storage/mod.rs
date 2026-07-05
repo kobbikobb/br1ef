@@ -35,6 +35,12 @@ impl AppConfig {
     }
 }
 
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self::defaults()
+    }
+}
+
 pub trait Storage: Send + Sync {
     fn store_items(&mut self, items: &[Item]) -> anyhow::Result<()>;
     fn get_items(&self) -> anyhow::Result<Vec<Item>>;

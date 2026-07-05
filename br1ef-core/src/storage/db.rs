@@ -12,7 +12,7 @@ use crate::storage::Storage;
 use crate::{Digest, Item};
 
 pub struct SqliteStorage {
-    conn: Mutex<Connection>,
+    pub(crate) conn: Mutex<Connection>,
 }
 
 impl SqliteStorage {

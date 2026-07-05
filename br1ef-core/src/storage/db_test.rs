@@ -1,6 +1,6 @@
 use super::SqliteStorage;
 use crate::Item;
-use crate::storage::Storage;
+use crate::storage::{AppConfig, Storage};
 
 fn make_item(id: &str) -> Item {
     make_item_with_source(id, "s")
@@ -200,4 +200,86 @@ fn counts_dedup_does_not_affect_counts() {
     let counts = s.get_item_counts_by_source().unwrap();
 
     assert_eq!(counts, vec![("social".to_string(), 1)]);
+}
+
+#[test]
+fn app_config_partial_in_db_returns_defaults_for_missing_keys() {
+    let mut s = new_store();
+    s.set_app_config(&AppConfig::defaults()).unwrap();
+    // Only write imap_host and imap_port
+    {
+        let conn = s.conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR REPLACE INTO app_config (key, value) VALUES ('imap_host', 'imap.test.com')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT OR REPLACE INTO app_config (key, value) VALUES ('imap_port', '993')",
+            [],
+        )
+        .unwrap();
+    }
+
+    let cfg = s.get_app_config().unwrap();
+
+    assert_eq!(cfg.imap_host, "imap.test.com");
+    assert_eq!(cfg.imap_port, 993);
+    assert!(cfg.imap_username.is_empty());
+    assert!(cfg.imap_password.is_empty());
+    assert!(!cfg.is_complete());
+}
+
+#[test]
+fn app_config_corrupt_port_falls_back_to_default() {
+    let mut s = new_store();
+    s.set_app_config(&AppConfig::defaults()).unwrap();
+    {
+        let conn = s.conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR REPLACE INTO app_config (key, value) VALUES ('imap_port', 'not-a-number')",
+            [],
+        )
+        .unwrap();
+    }
+
+    let cfg = s.get_app_config().unwrap();
+
+    assert_eq!(cfg.imap_port, 993);
+}
+
+#[test]
+fn app_config_empty_table_returns_defaults() {
+    let s = new_store();
+
+    let cfg = s.get_app_config().unwrap();
+
+    assert_eq!(cfg.imap_host, "");
+    assert_eq!(cfg.imap_port, 993);
+    assert_eq!(cfg.ollama_base_url, "http://localhost:11434");
+    assert!(!cfg.is_complete());
+}
+
+#[test]
+fn app_config_roundtrip_preserves_all_fields() {
+    let mut s = new_store();
+    let cfg = AppConfig {
+        imap_host: "imap.test.com".into(),
+        imap_port: 143,
+        imap_username: "user@test.com".into(),
+        imap_password: "p@ss".into(),
+        ollama_base_url: "http://ollama:11434".into(),
+        ollama_model: "llama3.2:3b".into(),
+    };
+
+    s.set_app_config(&cfg).unwrap();
+    let loaded = s.get_app_config().unwrap();
+
+    assert_eq!(loaded.imap_host, "imap.test.com");
+    assert_eq!(loaded.imap_port, 143);
+    assert_eq!(loaded.imap_username, "user@test.com");
+    assert_eq!(loaded.imap_password, "p@ss");
+    assert_eq!(loaded.ollama_base_url, "http://ollama:11434");
+    assert_eq!(loaded.ollama_model, "llama3.2:3b");
+    assert!(loaded.is_complete());
 }

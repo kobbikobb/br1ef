@@ -2,7 +2,7 @@ mod imap;
 
 pub use imap::GMAIL_CATEGORY_PREFIX;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::Item;
 
@@ -26,22 +26,6 @@ impl ImapFetcher {
             username: username.to_string(),
             password: password.to_string(),
         }
-    }
-
-    pub fn from_env() -> Result<Self> {
-        let host = std::env::var("IMAP_HOST").context("IMAP_HOST not set")?;
-        let port: u16 = std::env::var("IMAP_PORT")
-            .unwrap_or_else(|_| "993".into())
-            .parse()
-            .context("IMAP_PORT must be a number")?;
-        let username = std::env::var("IMAP_USERNAME").context("IMAP_USERNAME not set")?;
-        let password = std::env::var("IMAP_PASSWORD").context("IMAP_PASSWORD not set")?;
-        Ok(Self {
-            host,
-            port,
-            username,
-            password,
-        })
     }
 }
 
