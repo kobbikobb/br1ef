@@ -65,11 +65,20 @@ fn build_prompt(items: &[Item]) -> String {
          Below are emails from the last week. Only use the information from these\n\
          emails — do not include anything not present in the emails above.\n\n\
          {email_list}\n\
-         Please provide a brief summary with:\n\
-         1. Key highlights — things that need attention\n\
-         2. Any events happening today or in the next few days\n\n\
+         Categorize and summarize as follows:\n\n\
+         ## Personal & Action Required\n\
+         Include personal messages from people I know, children's school\n\
+         events/notices, personal event invitations, Iceland-specific items\n\
+         (taxes, government, utilities, local matters), and anything\n\
+         requiring a response or action from me.\n\n\
+         ## Everything Else (skip if commercial)\n\
+         Briefly mention anything else genuinely interesting, but IGNORE:\n\
+         - Commercial emails, marketing, ads, and promotional content\n\
+         - LinkedIn notifications and recruitment pitches\n\
+         - Media highlights and news summaries (unless unusually personal)\n\
+         - Anything that looks like someone selling something\n\n\
          If nothing needs attention or there are no actionable items, say so.\n\
-         Keep it concise, under 150 words.",
+         Keep it concise, under 200 words.",
     )
 }
 
