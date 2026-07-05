@@ -3,17 +3,17 @@ use br1ef_core::Item;
 use br1ef_core::storage::InMemoryStorage;
 use br1ef_core::storage::Storage;
 
-fn storage_with(items: &[(&str, &str, &str)]) -> InMemoryStorage {
+fn storage_with(items: &[(&str, &str, &str, &str)]) -> InMemoryStorage {
     let mut s = InMemoryStorage::new();
     let stored: Vec<Item> = items
         .iter()
-        .map(|&(id, source, title)| Item {
+        .map(|&(id, source, title, mailbox)| Item {
             id: id.into(),
             title: title.into(),
             from: "sender".into(),
             body: "body".into(),
             source: source.into(),
-            mailbox: "INBOX".into(),
+            mailbox: mailbox.into(),
             urgent: false,
         })
         .collect();
@@ -40,31 +40,77 @@ fn count_items_empty() {
 }
 
 #[test]
-fn count_items_single_source() {
-    let storage = storage_with(&[("a", "inbox", "title a")]);
+fn count_items_single_mailbox() {
+    let storage = storage_with(&[("a", "imap", "title a", "INBOX")]);
 
     let output = run(|w| cmd_count_items(&storage, w));
 
     assert_eq!(
         output,
-        "📦 Items by source:\n  inbox — 1\n  ─────\n  Total: 1\n"
+        "📦 Items by source:\n  imap:\n    INBOX — 1\n  ─────\n  Total: 1\n"
     );
 }
 
 #[test]
-fn count_items_multiple_sources() {
+fn count_items_multiple_mailboxes() {
     let storage = storage_with(&[
-        ("a", "social", "post a"),
-        ("b", "updates", "update b"),
-        ("c", "social", "post c"),
-        ("d", "forums", "thread d"),
+        ("a", "imap", "post a", "INBOX"),
+        ("b", "imap", "update b", "Updates"),
+        ("c", "imap", "post c", "Social"),
+        ("d", "imap", "thread d", "Social"),
     ]);
 
     let output = run(|w| cmd_count_items(&storage, w));
 
     assert_eq!(
         output,
-        "📦 Items by source:\n  forums — 1\n  social — 2\n  updates — 1\n  ─────\n  Total: 4\n"
+        "📦 Items by source:\n  imap:\n    INBOX — 1\n    Social — 2\n    Updates — 1\n  ─────\n  Total: 4\n"
+    );
+}
+
+#[test]
+fn count_items_multiple_sources_with_mailboxes() {
+    let storage = storage_with(&[
+        ("a", "imap", "inbox mail", "INBOX"),
+        ("b", "imap", "social post", "Social"),
+        ("c", "slack", "channel msg", "general"),
+        ("d", "imap", "another social", "Social"),
+        ("e", "slack", "announcement", "announcements"),
+    ]);
+
+    let output = run(|w| cmd_count_items(&storage, w));
+
+    assert_eq!(
+        output,
+        "📦 Items by source:\n  imap:\n    INBOX — 1\n    Social — 2\n  slack:\n    announcements — 1\n    general — 1\n  ─────\n  Total: 5\n"
+    );
+}
+
+#[test]
+fn count_items_empty_mailbox_displayed_as_unknown() {
+    let storage = storage_with(&[("a", "imap", "title a", "")]);
+
+    let output = run(|w| cmd_count_items(&storage, w));
+
+    assert_eq!(
+        output,
+        "📦 Items by source:\n  imap:\n    (unknown) — 1\n  ─────\n  Total: 1\n"
+    );
+}
+
+#[test]
+fn count_items_gmail_category_strips_prefix() {
+    let storage = storage_with(&[("a", "imap", "social mail", "@@CATEGORY@@/Social")]);
+
+    let output = run(|w| cmd_count_items(&storage, w));
+
+    assert!(
+        output.contains("Social — 1"),
+        "prefix should be stripped: {output:?}"
+    );
+    assert!(
+        !output.contains("@@CATEGORY@@"),
+        "prefix should not appear: {output:?}"
     );
 }
 
@@ -79,7 +125,7 @@ fn list_items_empty() {
 
 #[test]
 fn list_items_shows_items() {
-    let storage = storage_with(&[("a", "inbox", "hello world")]);
+    let storage = storage_with(&[("a", "inbox", "hello world", "INBOX")]);
 
     let output = run(|w| cmd_list_items(&storage, w));
 
@@ -92,7 +138,7 @@ fn list_items_shows_items() {
 #[test]
 fn list_items_truncates_long_titles() {
     let long_title = "a".repeat(90);
-    let storage = storage_with(&[("a", "inbox", &long_title)]);
+    let storage = storage_with(&[("a", "inbox", &long_title, "INBOX")]);
 
     let output = run(|w| cmd_list_items(&storage, w));
 
@@ -103,7 +149,7 @@ fn list_items_truncates_long_titles() {
 
 #[test]
 fn list_items_short_title_not_truncated() {
-    let storage = storage_with(&[("a", "inbox", "short title")]);
+    let storage = storage_with(&[("a", "inbox", "short title", "INBOX")]);
 
     let output = run(|w| cmd_list_items(&storage, w));
 
@@ -113,7 +159,10 @@ fn list_items_short_title_not_truncated() {
 
 #[test]
 fn list_items_multiple_items() {
-    let storage = storage_with(&[("a", "social", "first item"), ("b", "inbox", "second item")]);
+    let storage = storage_with(&[
+        ("a", "social", "first item", "INBOX"),
+        ("b", "inbox", "second item", "INBOX"),
+    ]);
 
     let output = run(|w| cmd_list_items(&storage, w));
 

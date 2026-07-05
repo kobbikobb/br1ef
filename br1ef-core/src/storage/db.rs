@@ -196,6 +196,32 @@ impl Storage for SqliteStorage {
         Ok(result)
     }
 
+    fn get_item_counts_by_mailbox(&self) -> Result<Vec<(String, String, usize)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare(
+                "SELECT source, mailbox, COUNT(*)
+                 FROM items
+                 GROUP BY source, mailbox
+                 ORDER BY source, mailbox",
+            )
+            .context("failed to prepare mailbox count query")?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, i64>(2)? as usize,
+                ))
+            })
+            .context("failed to query item counts by mailbox")?;
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row.context("failed to read count row")?);
+        }
+        Ok(result)
+    }
+
     fn get_digest(&self) -> Result<Option<Digest>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
