@@ -22,6 +22,9 @@ all: check
 
 check: build lint fmt audit test
 
+fetch:
+	cargo run fetch
+
 count-items:
 	cargo run count-items
 
