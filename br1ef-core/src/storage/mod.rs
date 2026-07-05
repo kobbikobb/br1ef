@@ -19,12 +19,12 @@ pub struct AppConfig {
 impl AppConfig {
     pub fn defaults() -> Self {
         Self {
-            imap_host: "".into(),
+            imap_host: "imap.gmail.com".into(),
             imap_port: 993,
             imap_username: "".into(),
             imap_password: "".into(),
             ollama_base_url: "http://localhost:11434".into(),
-            ollama_model: "llama3.2:1b".into(),
+            ollama_model: "qwen2.5-coder:7b".into(),
         }
     }
 

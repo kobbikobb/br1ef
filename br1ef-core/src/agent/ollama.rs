@@ -4,6 +4,33 @@ use serde::Deserialize;
 use crate::Item;
 use crate::agent::Agent;
 
+#[derive(Deserialize)]
+struct ListResponse {
+    models: Vec<ModelEntry>,
+}
+
+#[derive(Deserialize)]
+struct ModelEntry {
+    name: String,
+}
+
+pub fn list_ollama_models(base_url: &str) -> Result<Vec<String>> {
+    let base = base_url.trim_end_matches('/');
+    let resp_body = ureq::get(&format!("{base}/api/tags"))
+        .call()
+        .context("failed to call Ollama API")?
+        .into_string()
+        .context("failed to read Ollama response")?;
+    parse_list_response(&resp_body)
+}
+
+pub fn parse_list_response(json: &str) -> Result<Vec<String>> {
+    let resp: ListResponse = serde_json::from_str(json)?;
+    let mut names: Vec<String> = resp.models.into_iter().map(|m| m.name).collect();
+    names.sort();
+    Ok(names)
+}
+
 pub struct OllamaAgent {
     base_url: String,
     model: String,

@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use anyhow::{Context, Result};
 use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
 use br1ef_core::storage::{AppConfig, Storage};
@@ -22,18 +24,52 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         .with_context(|| "Failed to read IMAP username")?;
 
     {
-        print!("IMAP password: ");
+        let has_pw = !cfg.imap_password.is_empty();
+        print!(
+            "IMAP password{}",
+            if has_pw { " (Enter to keep)" } else { "" }
+        );
+        print!(": ");
         std::io::Write::flush(&mut std::io::stdout())?;
         let mut line = String::new();
         std::io::stdin().read_line(&mut line)?;
-        cfg.imap_password = line.trim().to_string();
+        let trimmed = line.trim().to_string();
+        if !trimmed.is_empty() {
+            cfg.imap_password = trimmed;
+        }
     }
 
     println!();
     cfg.ollama_base_url = ask("Ollama base URL", &cfg.ollama_base_url)
         .with_context(|| "Failed to read Ollama URL")?;
-    cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model)
-        .with_context(|| "Failed to read Ollama model")?;
+
+    match br1ef_core::agent::list_ollama_models(&cfg.ollama_base_url) {
+        Ok(models) if !models.is_empty() => {
+            println!("\nAvailable models:");
+            for (i, name) in models.iter().enumerate() {
+                let current = if *name == cfg.ollama_model {
+                    " (current)"
+                } else {
+                    ""
+                };
+                println!("  {:2}. {}{}", i + 1, name, current);
+            }
+            print!("Select model (number, or Enter for current): ");
+            std::io::Write::flush(&mut std::io::stdout())?;
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            if let Ok(idx) = input.trim().parse::<usize>()
+                && idx > 0
+                && idx <= models.len()
+            {
+                cfg.ollama_model = models[idx - 1].clone();
+            }
+        }
+        _ => {
+            cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model)
+                .with_context(|| "Failed to read Ollama model")?;
+        }
+    }
 
     // Step 2: mailbox selection
     let mailboxes: Vec<String> = if let Some(f) = fetcher {
@@ -138,6 +174,7 @@ fn finish(cfg: &AppConfig, storage: &dyn Storage) -> Result<()> {
 
 fn ask(prompt: &str, current: &str) -> Result<String> {
     let mut input = String::new();
+
     print!(
         "{prompt} (current: {}) : ",
         if current.is_empty() {
@@ -146,8 +183,18 @@ fn ask(prompt: &str, current: &str) -> Result<String> {
             current
         }
     );
+    std::io::stdout().flush()?;
     std::io::stdin().read_line(&mut input)?;
-    Ok(input.trim().to_string())
+    Ok(prompt_value(&input, current))
+}
+
+pub fn prompt_value(input: &str, current: &str) -> String {
+    let trimmed = input.trim().to_string();
+    if trimmed.is_empty() {
+        current.to_string()
+    } else {
+        trimmed
+    }
 }
 
 pub fn parse_port(input: &str, current: u16) -> u16 {
@@ -160,6 +207,7 @@ pub fn parse_port(input: &str, current: u16) -> u16 {
 fn ask_port(current: &u16) -> Result<u16> {
     let mut input = String::new();
     print!("IMAP port (current: {}): ", current);
+    std::io::stdout().flush()?;
     std::io::stdin().read_line(&mut input)?;
     Ok(parse_port(&input, *current))
 }

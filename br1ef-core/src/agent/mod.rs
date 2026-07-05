@@ -1,6 +1,6 @@
 mod ollama;
 
-pub use ollama::OllamaAgent;
+pub use ollama::{OllamaAgent, list_ollama_models};
 
 use crate::Item;
 
