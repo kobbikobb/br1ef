@@ -149,6 +149,7 @@ fn dedup_single_item() {
         from: "alice@example.com".into(),
         body: "body".into(),
         source: "imap".into(),
+        mailbox: "".into(),
         urgent: false,
     }];
 
@@ -166,6 +167,7 @@ fn dedup_collapses_thread_to_newest() {
             from: "alice@example.com".into(),
             body: "old reply".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -174,6 +176,7 @@ fn dedup_collapses_thread_to_newest() {
             from: "alice@example.com".into(),
             body: "newest reply".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
     ];
@@ -194,6 +197,7 @@ fn dedup_keeps_different_senders() {
             from: "alice@example.com".into(),
             body: "alice says".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -202,6 +206,7 @@ fn dedup_keeps_different_senders() {
             from: "bob@example.com".into(),
             body: "bob says".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
     ];
@@ -220,6 +225,7 @@ fn dedup_preserves_order() {
             from: "alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -228,6 +234,7 @@ fn dedup_preserves_order() {
             from: "alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -236,6 +243,7 @@ fn dedup_preserves_order() {
             from: "alice@example.com".into(),
             body: "reply".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
     ];
@@ -256,6 +264,7 @@ fn dedup_all_unique() {
             from: "alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -264,6 +273,7 @@ fn dedup_all_unique() {
             from: "bob@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
     ];
@@ -282,6 +292,7 @@ fn dedup_many_replies_only_keeps_last() {
             from: "alice@example.com".into(),
             body: format!("reply {i}"),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         })
         .collect();
@@ -305,6 +316,7 @@ fn dedup_different_from_casing() {
             from: "Alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -313,6 +325,7 @@ fn dedup_different_from_casing() {
             from: "alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
     ];
@@ -331,6 +344,7 @@ fn dedup_preserves_input_order() {
             from: "a@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -339,6 +353,7 @@ fn dedup_preserves_input_order() {
             from: "b@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
         Item {
@@ -347,6 +362,7 @@ fn dedup_preserves_input_order() {
             from: "c@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         },
     ];

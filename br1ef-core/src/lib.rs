@@ -13,6 +13,7 @@ pub struct Item {
     pub from: String,
     pub body: String,
     pub source: String,
+    pub mailbox: String,
     pub urgent: bool,
 }
 

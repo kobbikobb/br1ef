@@ -29,6 +29,7 @@ fn make_item(id: &str, source: &str, body: &str) -> Item {
         from: "alice@test.com".to_string(),
         body: body.to_string(),
         source: source.to_string(),
+        mailbox: "".into(),
         urgent: false,
     }
 }
@@ -40,6 +41,7 @@ fn make_item_from(id: &str, from: &str, title: &str) -> Item {
         from: from.to_string(),
         body: "body".to_string(),
         source: "imap".to_string(),
+        mailbox: "".into(),
         urgent: false,
     }
 }
@@ -71,6 +73,7 @@ fn digest_items_with_items_stores_digest_with_correct_summary() {
                 from: "alice@a".into(),
                 body: "hello world".into(),
                 source: "imap".into(),
+                mailbox: "".into(),
                 urgent: false,
             },
             Item {
@@ -79,6 +82,7 @@ fn digest_items_with_items_stores_digest_with_correct_summary() {
                 from: "bob@b".into(),
                 body: "foo bar baz".into(),
                 source: "imap".into(),
+                mailbox: "".into(),
                 urgent: false,
             },
         ])
@@ -125,6 +129,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 from: "alice@a".into(),
                 body: "a".into(),
                 source: "imap".into(),
+                mailbox: "".into(),
                 urgent: false,
             },
             Item {
@@ -133,6 +138,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 from: "alice@b".into(),
                 body: "b".into(),
                 source: "slack".into(),
+                mailbox: "".into(),
                 urgent: false,
             },
             Item {
@@ -141,6 +147,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 from: "alice@c".into(),
                 body: "c".into(),
                 source: "imap".into(),
+                mailbox: "".into(),
                 urgent: false,
             },
             Item {
@@ -149,6 +156,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 from: "alice@d".into(),
                 body: "d".into(),
                 source: "slack".into(),
+                mailbox: "".into(),
                 urgent: false,
             },
         ])

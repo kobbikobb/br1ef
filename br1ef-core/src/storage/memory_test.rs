@@ -13,6 +13,7 @@ fn make_item_with_source(id: &str, source: &str) -> Item {
         from: "f".into(),
         body: "b".into(),
         source: source.into(),
+        mailbox: "".into(),
         urgent: false,
     }
 }

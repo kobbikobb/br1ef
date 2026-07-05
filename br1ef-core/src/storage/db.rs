@@ -24,6 +24,7 @@ impl SqliteStorage {
                 \"from\" TEXT NOT NULL,
                 body TEXT NOT NULL,
                 source TEXT NOT NULL,
+                mailbox TEXT NOT NULL DEFAULT '',
                 urgent INTEGER NOT NULL DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS digests (
@@ -47,6 +48,9 @@ impl SqliteStorage {
         let _ =
             conn.execute_batch("ALTER TABLE digests ADD COLUMN summary TEXT NOT NULL DEFAULT ''");
 
+        // migration: add mailbox column if missing
+        let _ = conn.execute_batch("ALTER TABLE items ADD COLUMN mailbox TEXT NOT NULL DEFAULT ''");
+
         Ok(Self {
             conn: Mutex::new(conn),
         })
@@ -58,8 +62,8 @@ impl Storage for SqliteStorage {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
             .prepare(
-                "INSERT OR IGNORE INTO items (id, title, \"from\", body, source, urgent)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                "INSERT OR IGNORE INTO items (id, title, \"from\", body, source, mailbox, urgent)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             )
             .context("failed to prepare insert")?;
         for item in items {
@@ -69,6 +73,7 @@ impl Storage for SqliteStorage {
                 item.from,
                 item.body,
                 item.source,
+                item.mailbox,
                 item.urgent as i32,
             ])
             .context("failed to insert item")?;
@@ -79,7 +84,7 @@ impl Storage for SqliteStorage {
     fn get_items(&self) -> Result<Vec<Item>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
-            .prepare("SELECT id, title, \"from\", body, source, urgent FROM items")
+            .prepare("SELECT id, title, \"from\", body, source, mailbox, urgent FROM items")
             .context("failed to prepare select")?;
         let items = stmt
             .query_map([], |row| {
@@ -89,7 +94,8 @@ impl Storage for SqliteStorage {
                     from: row.get(2)?,
                     body: row.get(3)?,
                     source: row.get(4)?,
-                    urgent: row.get::<_, i32>(5)? != 0,
+                    mailbox: row.get(5)?,
+                    urgent: row.get::<_, i32>(6)? != 0,
                 })
             })
             .context("failed to query items")?;
