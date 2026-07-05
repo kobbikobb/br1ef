@@ -22,11 +22,19 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         .with_context(|| "Failed to read IMAP username")?;
 
     {
-        print!("IMAP password: ");
+        let has_pw = !cfg.imap_password.is_empty();
+        print!(
+            "IMAP password{}",
+            if has_pw { " (Enter to keep)" } else { "" }
+        );
+        print!(": ");
         std::io::Write::flush(&mut std::io::stdout())?;
         let mut line = String::new();
         std::io::stdin().read_line(&mut line)?;
-        cfg.imap_password = line.trim().to_string();
+        let trimmed = line.trim().to_string();
+        if !trimmed.is_empty() {
+            cfg.imap_password = trimmed;
+        }
     }
 
     println!();
@@ -147,7 +155,16 @@ fn ask(prompt: &str, current: &str) -> Result<String> {
         }
     );
     std::io::stdin().read_line(&mut input)?;
-    Ok(input.trim().to_string())
+    Ok(prompt_value(&input, current))
+}
+
+pub fn prompt_value(input: &str, current: &str) -> String {
+    let trimmed = input.trim().to_string();
+    if trimmed.is_empty() {
+        current.to_string()
+    } else {
+        trimmed
+    }
 }
 
 pub fn parse_port(input: &str, current: u16) -> u16 {

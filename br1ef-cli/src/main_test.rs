@@ -340,3 +340,34 @@ fn app_config_default_trait() {
     assert!(!cfg.is_complete());
     assert_eq!(cfg.imap_port, 993);
 }
+
+#[test]
+fn prompt_value_keeps_current_on_empty() {
+    assert_eq!(config::prompt_value("", "imap.gmail.com"), "imap.gmail.com");
+    assert_eq!(
+        config::prompt_value("\n", "imap.gmail.com"),
+        "imap.gmail.com"
+    );
+    assert_eq!(
+        config::prompt_value("  ", "imap.gmail.com"),
+        "imap.gmail.com"
+    );
+}
+
+#[test]
+fn prompt_value_uses_new_input() {
+    assert_eq!(
+        config::prompt_value("imap.test.com", "imap.gmail.com"),
+        "imap.test.com"
+    );
+    assert_eq!(
+        config::prompt_value("  imap.test.com  ", "imap.gmail.com"),
+        "imap.test.com"
+    );
+}
+
+#[test]
+fn prompt_value_empty_current_stays_empty_on_empty_input() {
+    assert_eq!(config::prompt_value("", ""), "");
+    assert_eq!(config::prompt_value("\n", ""), "");
+}
