@@ -4,7 +4,7 @@ use anyhow::Result;
 use br1ef_core::agent::OllamaAgent;
 use br1ef_core::fetcher::ImapFetcher;
 use br1ef_core::service;
-use br1ef_core::storage::SqliteStorage;
+use br1ef_core::storage::{AppConfig, SqliteStorage};
 use clap::{Parser, Subcommand};
 use std::io::Write;
 
@@ -41,7 +41,6 @@ enum Commands {
 
 fn main() -> Result<()> {
     let mut storage = SqliteStorage::new("br1ef.db")?;
-    let agent = OllamaAgent::new("http://localhost:11434", "llama3.2:1b");
     let cli = Cli::parse();
 
     match cli.command {
@@ -50,13 +49,22 @@ fn main() -> Result<()> {
             Ok(())
         }
         Commands::Fetch => cmd_fetch(&mut storage),
-        Commands::Digest => cmd_digest(&mut storage, &agent),
+        Commands::Digest => cmd_digest(&mut storage),
         Commands::Daily => cmd_daily(&storage),
         Commands::Config => cmd_config(&mut storage),
         Commands::CountItems => cmd_count_items(&storage, &mut std::io::stdout()),
         Commands::ListItems => cmd_list_items(&storage, &mut std::io::stdout()),
         Commands::DeleteItems => cmd_delete_items(&mut storage),
     }
+}
+
+fn load_config(storage: &dyn br1ef_core::storage::Storage) -> Result<AppConfig> {
+    let cfg = storage.get_app_config()?;
+    anyhow::ensure!(
+        cfg.is_complete(),
+        "Configuration incomplete. Run `br1ef config` to set up IMAP credentials and Ollama settings."
+    );
+    Ok(cfg)
 }
 
 fn print_help() {
@@ -75,8 +83,8 @@ fn print_help() {
     println!("  help         Show this usage guide");
     println!();
     println!("Setup:");
-    println!("  1. Copy .env.example to .env and fill in your IMAP credentials");
-    println!("  2. Make sure Ollama is running with llama3.2:1b");
+    println!("  1. Run `br1ef config` to set up IMAP and Ollama credentials");
+    println!("  2. Make sure Ollama is running with llama3.2:1b (or your preferred model)");
     println!("  3. Run `br1ef fetch`, then `br1ef digest`, then `br1ef daily`");
     println!();
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
@@ -90,8 +98,13 @@ fn display_mailbox(name: &str) -> &str {
 }
 
 fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
-    dotenvy::dotenv().ok();
-    let fetcher = ImapFetcher::from_env()?;
+    let cfg = load_config(storage)?;
+    let fetcher = ImapFetcher::new(
+        &cfg.imap_host,
+        cfg.imap_port,
+        &cfg.imap_username,
+        &cfg.imap_password,
+    );
 
     println!("📬 Fetching mailboxes…");
     let result = service::fetch_items(storage, &fetcher)?;
@@ -108,11 +121,10 @@ fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     Ok(())
 }
 
-fn cmd_digest(
-    storage: &mut dyn br1ef_core::storage::Storage,
-    agent: &dyn br1ef_core::agent::Agent,
-) -> Result<()> {
-    service::digest_items(storage, agent)?;
+fn cmd_digest(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
+    let cfg = load_config(storage)?;
+    let agent = OllamaAgent::new(&cfg.ollama_base_url, &cfg.ollama_model);
+    service::digest_items(storage, &agent)?;
     Ok(())
 }
 
@@ -222,9 +234,24 @@ fn cmd_delete_items(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()
 }
 
 fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
-    dotenvy::dotenv().ok();
-    let fetcher = ImapFetcher::from_env()?;
-    config::configure(storage, &fetcher)?;
+    let fetcher = storage.get_app_config().ok().and_then(|cfg| {
+        if cfg.is_complete() {
+            Some(ImapFetcher::new(
+                &cfg.imap_host,
+                cfg.imap_port,
+                &cfg.imap_username,
+                &cfg.imap_password,
+            ))
+        } else {
+            None
+        }
+    });
+    config::configure(
+        storage,
+        fetcher
+            .as_ref()
+            .map(|f| f as &dyn br1ef_core::fetcher::Fetcher),
+    )?;
     Ok(())
 }
 

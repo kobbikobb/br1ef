@@ -1,7 +1,6 @@
 use super::*;
 use br1ef_core::Item;
-use br1ef_core::storage::InMemoryStorage;
-use br1ef_core::storage::Storage;
+use br1ef_core::storage::{AppConfig, InMemoryStorage, Storage};
 
 fn storage_with(items: &[(&str, &str, &str, &str)]) -> InMemoryStorage {
     let mut s = InMemoryStorage::new();
@@ -170,4 +169,99 @@ fn list_items_multiple_items() {
     assert!(output.contains("  first item"));
     assert!(output.contains("  second item"));
     assert!(output.contains("  ─────"));
+}
+
+#[test]
+fn test_app_config_defaults_incomplete() {
+    let cfg = AppConfig::defaults();
+    assert!(!cfg.is_complete());
+    assert!(cfg.imap_host.is_empty());
+    assert_eq!(cfg.imap_port, 993);
+    assert_eq!(cfg.ollama_base_url, "http://localhost:11434");
+    assert_eq!(cfg.ollama_model, "llama3.2:1b");
+}
+
+#[test]
+fn test_app_config_is_complete() {
+    let cfg = AppConfig {
+        imap_host: "imap.example.com".into(),
+        imap_port: 993,
+        imap_username: "user@example.com".into(),
+        imap_password: "secret".into(),
+        ..AppConfig::defaults()
+    };
+    assert!(cfg.is_complete());
+}
+
+#[test]
+fn test_app_config_missing_host_not_complete() {
+    let cfg = AppConfig {
+        imap_host: "".into(),
+        imap_port: 993,
+        imap_username: "user@example.com".into(),
+        imap_password: "secret".into(),
+        ..AppConfig::defaults()
+    };
+    assert!(!cfg.is_complete());
+}
+
+#[test]
+fn test_load_config_errors_on_incomplete() {
+    let storage = InMemoryStorage::new();
+    let result = load_config(&storage);
+    assert!(result.is_err());
+    let err = result.unwrap_err().to_string();
+    assert!(err.contains("Run `br1ef config`"));
+}
+
+#[test]
+fn test_load_config_ok_on_complete() {
+    let mut storage = InMemoryStorage::new();
+    let cfg = AppConfig {
+        imap_host: "imap.example.com".into(),
+        imap_port: 993,
+        imap_username: "user".into(),
+        imap_password: "pass".into(),
+        ..AppConfig::defaults()
+    };
+    storage.set_app_config(&cfg).unwrap();
+    let result = load_config(&storage);
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap().imap_host, "imap.example.com");
+}
+
+#[test]
+fn test_app_config_roundtrip_in_memory() {
+    let mut storage = InMemoryStorage::new();
+    let cfg = AppConfig {
+        imap_host: "imap.test.com".into(),
+        imap_port: 993,
+        imap_username: "test@test.com".into(),
+        imap_password: "p@ss|word".into(),
+        ollama_base_url: "http://localhost:11434".into(),
+        ollama_model: "llama3.2:1b".into(),
+    };
+    storage.set_app_config(&cfg).unwrap();
+    let loaded = storage.get_app_config().unwrap();
+    assert_eq!(loaded.imap_host, "imap.test.com");
+    assert_eq!(loaded.imap_password, "p@ss|word");
+}
+
+#[test]
+fn test_br1ef_app_config_roundtrip_sqlite() {
+    use br1ef_core::storage::SqliteStorage;
+    let mut storage = SqliteStorage::new(":memory:").unwrap();
+    let cfg = AppConfig {
+        imap_host: "imap.test.com".into(),
+        imap_port: 993,
+        imap_username: "test@test.com".into(),
+        imap_password: "p@ss|word".into(),
+        ollama_base_url: "http://localhost:11434".into(),
+        ollama_model: "llama3.2:1b".into(),
+    };
+    storage.set_app_config(&cfg).unwrap();
+    let loaded = storage.get_app_config().unwrap();
+    assert_eq!(loaded.imap_host, "imap.test.com");
+    assert_eq!(loaded.imap_password, "p@ss|word");
+    assert_eq!(loaded.imap_port, 993);
 }

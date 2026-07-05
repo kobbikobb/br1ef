@@ -19,6 +19,15 @@ pub struct ImapFetcher {
 }
 
 impl ImapFetcher {
+    pub fn new(host: &str, port: u16, username: &str, password: &str) -> Self {
+        Self {
+            host: host.to_string(),
+            port,
+            username: username.to_string(),
+            password: password.to_string(),
+        }
+    }
+
     pub fn from_env() -> Result<Self> {
         let host = std::env::var("IMAP_HOST").context("IMAP_HOST not set")?;
         let port: u16 = std::env::var("IMAP_PORT")

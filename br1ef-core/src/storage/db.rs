@@ -7,6 +7,7 @@ use anyhow::{Context, Result};
 mod tests;
 use rusqlite::Connection;
 
+use crate::storage::AppConfig;
 use crate::storage::Storage;
 use crate::{Digest, Item};
 
@@ -40,6 +41,10 @@ impl SqliteStorage {
             );
             CREATE TABLE IF NOT EXISTS selected_mailboxes (
                 name TEXT PRIMARY KEY
+            );
+            CREATE TABLE IF NOT EXISTS app_config (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
             );",
         )
         .context("failed to create tables")?;
@@ -280,5 +285,49 @@ impl Storage for SqliteStorage {
             summary,
             generated_at,
         }))
+    }
+
+    fn get_app_config(&self) -> Result<AppConfig> {
+        let conn = self.conn.lock().unwrap();
+        let default = AppConfig::defaults();
+
+        let read = |key: &str, fallback: &str| -> String {
+            conn.query_row(
+                "SELECT value FROM app_config WHERE key = ?1",
+                [key],
+                |row| row.get::<_, String>(0),
+            )
+            .unwrap_or_else(|_| fallback.to_string())
+        };
+
+        Ok(AppConfig {
+            imap_host: read("imap_host", &default.imap_host),
+            imap_port: read("imap_port", &default.imap_port.to_string())
+                .parse()
+                .unwrap_or(default.imap_port),
+            imap_username: read("imap_username", &default.imap_username),
+            imap_password: read("imap_password", &default.imap_password),
+            ollama_base_url: read("ollama_base_url", &default.ollama_base_url),
+            ollama_model: read("ollama_model", &default.ollama_model),
+        })
+    }
+
+    fn set_app_config(&mut self, cfg: &AppConfig) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let upsert = |key: &str, val: &str| -> Result<()> {
+            conn.execute(
+                "INSERT OR REPLACE INTO app_config (key, value) VALUES (?1, ?2)",
+                [key, val],
+            )
+            .context("failed to save app_config")?;
+            Ok(())
+        };
+        upsert("imap_host", &cfg.imap_host)?;
+        upsert("imap_port", &cfg.imap_port.to_string())?;
+        upsert("imap_username", &cfg.imap_username)?;
+        upsert("imap_password", &cfg.imap_password)?;
+        upsert("ollama_base_url", &cfg.ollama_base_url)?;
+        upsert("ollama_model", &cfg.ollama_model)?;
+        Ok(())
     }
 }
