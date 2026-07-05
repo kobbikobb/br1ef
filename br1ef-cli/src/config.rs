@@ -78,12 +78,13 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         seen.insert("INBOX".to_string());
         let mut selected = vec!["INBOX".to_string()];
         for part in input.split(',') {
-            if let Ok(idx) = part.trim().parse::<usize>() {
-                if idx > 0 && idx <= mailboxes.len() {
-                    let name = mailboxes[idx - 1].clone();
-                    if seen.insert(name.clone()) {
-                        selected.push(name);
-                    }
+            if let Ok(idx) = part.trim().parse::<usize>()
+                && idx > 0
+                && idx <= mailboxes.len()
+            {
+                let name = mailboxes[idx - 1].clone();
+                if seen.insert(name.clone()) {
+                    selected.push(name);
                 }
             }
         }
