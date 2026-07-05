@@ -58,14 +58,8 @@ fn fetch_items_defaults_to_inbox_when_no_mailboxes_configured() {
 fn fetch_items_auto_selects_categories_when_no_mailboxes_configured() {
     let mut storage = InMemoryStorage::new();
     let fetcher = MailboxMapFetcher(HashMap::from([
-        (
-            "INBOX".into(),
-            vec![item("1", "Inbox Mail")],
-        ),
-        (
-            "@@CATEGORY@@/Social".into(),
-            vec![item("2", "Social Post")],
-        ),
+        ("INBOX".into(), vec![item("1", "Inbox Mail")]),
+        ("@@CATEGORY@@/Social".into(), vec![item("2", "Social Post")]),
         (
             "@@CATEGORY@@/Updates".into(),
             vec![item("3", "Update Notice")],
@@ -78,10 +72,12 @@ fn fetch_items_auto_selects_categories_when_no_mailboxes_configured() {
     let result = result.unwrap();
     assert_eq!(result.items.len(), 3);
 
-    let mut mailbox_names: Vec<&str> =
-        result.per_mailbox.iter().map(|m| m.name.as_str()).collect();
+    let mut mailbox_names: Vec<&str> = result.per_mailbox.iter().map(|m| m.name.as_str()).collect();
     mailbox_names.sort();
-    assert_eq!(mailbox_names, vec!["@@CATEGORY@@/Social", "@@CATEGORY@@/Updates", "INBOX"]);
+    assert_eq!(
+        mailbox_names,
+        vec!["@@CATEGORY@@/Social", "@@CATEGORY@@/Updates", "INBOX"]
+    );
 }
 
 #[test]
