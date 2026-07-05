@@ -49,8 +49,7 @@ impl SqliteStorage {
             conn.execute_batch("ALTER TABLE digests ADD COLUMN summary TEXT NOT NULL DEFAULT ''");
 
         // migration: add mailbox column if missing
-        let _ =
-            conn.execute_batch("ALTER TABLE items ADD COLUMN mailbox TEXT NOT NULL DEFAULT ''");
+        let _ = conn.execute_batch("ALTER TABLE items ADD COLUMN mailbox TEXT NOT NULL DEFAULT ''");
 
         Ok(Self {
             conn: Mutex::new(conn),
