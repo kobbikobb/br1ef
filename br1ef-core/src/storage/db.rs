@@ -108,12 +108,12 @@ impl Storage for SqliteStorage {
 
     fn clear(&mut self) -> Result<()> {
         let conn = self.conn.lock().unwrap();
-        conn.execute("DELETE FROM items", [])
-            .context("failed to clear items")?;
-        conn.execute("DELETE FROM digests", [])
-            .context("failed to clear digests")?;
         conn.execute("DELETE FROM digest_sources", [])
             .context("failed to clear digest sources")?;
+        conn.execute("DELETE FROM digests", [])
+            .context("failed to clear digests")?;
+        conn.execute("DELETE FROM items", [])
+            .context("failed to clear items")?;
         Ok(())
     }
 
