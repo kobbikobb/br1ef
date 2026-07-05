@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use anyhow::{Context, Result};
 use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
 use br1ef_core::storage::{AppConfig, Storage};
@@ -146,6 +148,7 @@ fn finish(cfg: &AppConfig, storage: &dyn Storage) -> Result<()> {
 
 fn ask(prompt: &str, current: &str) -> Result<String> {
     let mut input = String::new();
+   
     print!(
         "{prompt} (current: {}) : ",
         if current.is_empty() {
@@ -154,6 +157,7 @@ fn ask(prompt: &str, current: &str) -> Result<String> {
             current
         }
     );
+    std::io::stdout().flush()?;
     std::io::stdin().read_line(&mut input)?;
     Ok(prompt_value(&input, current))
 }
@@ -177,6 +181,7 @@ pub fn parse_port(input: &str, current: u16) -> u16 {
 fn ask_port(current: &u16) -> Result<u16> {
     let mut input = String::new();
     print!("IMAP port (current: {}): ", current);
+    std::io::stdout().flush()?;
     std::io::stdin().read_line(&mut input)?;
     Ok(parse_port(&input, *current))
 }
