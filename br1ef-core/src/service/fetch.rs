@@ -36,7 +36,7 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<F
     for mailbox in &mailboxes {
         if has_inbox && mailbox.starts_with(CATEGORY_PREFIX) {
             let cat = &mailbox[CATEGORY_PREFIX.len()..];
-            eprintln!("  {cat}: skipped (already covered by INBOX)");
+            eprintln!("  ⏭ {cat} — already in INBOX");
             continue;
         }
 

@@ -20,13 +20,18 @@ pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> 
             .iter()
             .map(|i| i.body.split_whitespace().count())
             .sum();
-        eprintln!("  Generating digest from {n} item(s) ({bytes} bytes, {words} words)...");
+        let size = if bytes > 1024 * 1024 {
+            format!("{:.1} MiB", bytes as f64 / (1024.0 * 1024.0))
+        } else {
+            format!("{:.1} KiB", bytes as f64 / 1024.0)
+        };
+        eprintln!("  📖 Digesting {n} item(s) ({size}, {words} words)…");
 
         let start = std::time::Instant::now();
         let summary = agent.summarize_items(&items)?;
         let elapsed = start.elapsed();
 
-        eprintln!("  Digest generated in {:.1}s.", elapsed.as_secs_f64());
+        eprintln!("  ✨ Digest ready — {:.1}s.", elapsed.as_secs_f64());
         summary
     };
 
