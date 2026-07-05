@@ -136,7 +136,7 @@ fn fetch_items_deduplicates_across_mailboxes() {
 }
 
 #[test]
-fn fetch_items_propagates_fetcher_error() {
+fn fetch_items_skips_mailbox_on_fetch_error() {
     use anyhow::bail;
     struct BrokenFetcher;
 
@@ -154,11 +154,10 @@ fn fetch_items_propagates_fetcher_error() {
 
     let result = fetch_items(&mut storage, &BrokenFetcher);
 
-    let err = result.unwrap_err().to_string();
-    assert!(
-        err.contains("failed to fetch from \"INBOX\""),
-        "expected context wrapping, got: {err}"
-    );
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert!(result.items.is_empty());
+    assert!(result.per_mailbox.is_empty());
 }
 
 #[test]

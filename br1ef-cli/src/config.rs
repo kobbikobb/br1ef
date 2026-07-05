@@ -1,11 +1,9 @@
 use anyhow::Result;
-use br1ef_core::fetcher::Fetcher;
+use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
 use br1ef_core::storage::Storage;
 
-const CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
-
 fn display_name(raw: &str) -> &str {
-    if let Some(cat) = raw.strip_prefix(CATEGORY_PREFIX) {
+    if let Some(cat) = raw.strip_prefix(GMAIL_CATEGORY_PREFIX) {
         return cat;
     }
     raw
@@ -21,7 +19,7 @@ pub fn configure(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<()>
         } else {
             ""
         };
-        let suffix = if name.starts_with(CATEGORY_PREFIX) {
+        let suffix = if name.starts_with(GMAIL_CATEGORY_PREFIX) {
             " (category)"
         } else {
             ""
@@ -31,7 +29,7 @@ pub fn configure(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<()>
 
     println!("\nINBOX is always included.");
     println!("Enter numbers of other mailboxes to fetch (comma-separated),");
-    println!("'all' for all, or leave empty for just INBOX:");
+    println!("'all' for all, or leave empty for INBOX + Gmail categories:");
 
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
@@ -61,7 +59,7 @@ pub fn configure(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<()>
         }
     } else {
         for name in &all {
-            if name.starts_with(CATEGORY_PREFIX) && !selected.contains(name) {
+            if name.starts_with(GMAIL_CATEGORY_PREFIX) && !selected.contains(name) {
                 selected.push(name.clone());
             }
         }
