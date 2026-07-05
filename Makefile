@@ -1,12 +1,5 @@
 .PHONY: all do-it-lady build test lint fmt audit check
 
-all: check
-
-do-it-lady:
-	cargo run -q fetch > /dev/null
-	cargo run -q digest > /dev/null
-	cargo run -q daily > /dev/null
-
 build:
 	cargo build --workspace
 
@@ -25,4 +18,20 @@ fmt-chk:
 audit:
 	cargo audit
 
+all: check
+
 check: build lint fmt audit test
+
+count-items:
+	cargo run count-items
+
+list-items:
+	cargo run list-items
+
+delete-items:
+	cargo run delete-items
+
+do-it-lady:
+	cargo run -q fetch
+	cargo run -q digest
+	cargo run -q daily

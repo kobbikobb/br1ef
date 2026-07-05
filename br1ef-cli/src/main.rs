@@ -6,6 +6,7 @@ use br1ef_core::fetcher::ImapFetcher;
 use br1ef_core::service;
 use br1ef_core::storage::SqliteStorage;
 use clap::{Parser, Subcommand};
+use std::io::Write;
 
 #[derive(Parser)]
 #[command(
@@ -31,7 +32,9 @@ enum Commands {
     /// Configure br1ef preferences
     Config,
     /// Show stored item counts by source
-    Items,
+    CountItems,
+    /// Show stored item info
+    ListItems,
     /// Delete all stored items
     DeleteItems,
 }
@@ -50,7 +53,8 @@ fn main() -> Result<()> {
         Commands::Digest => cmd_digest(&mut storage, &agent),
         Commands::Daily => cmd_daily(&storage),
         Commands::Config => cmd_config(&mut storage),
-        Commands::Items => cmd_items(&storage),
+        Commands::CountItems => cmd_count_items(&storage, &mut std::io::stdout()),
+        Commands::ListItems => cmd_list_items(&storage, &mut std::io::stdout()),
         Commands::DeleteItems => cmd_delete_items(&mut storage),
     }
 }
@@ -65,7 +69,8 @@ fn print_help() {
     println!("  digest   Digest fetched data into a brief");
     println!("  daily    Show the daily brief");
     println!("  config   Configure br1ef preferences");
-    println!("  items        Show stored item counts by source");
+    println!("  count-items  Show stored item counts by source");
+    println!("  list-items   Show stored item info");
     println!("  delete-items  Delete all stored items");
     println!("  help         Show this usage guide");
     println!();
@@ -140,21 +145,48 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
     Ok(())
 }
 
-fn cmd_items(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
+fn cmd_count_items(storage: &dyn br1ef_core::storage::Storage, w: &mut impl Write) -> Result<()> {
     let counts = storage.get_item_counts_by_source()?;
 
     if counts.is_empty() {
-        println!("No items stored. Run `br1ef fetch` first.");
+        writeln!(w, "No items stored. Run `br1ef fetch` first.")?;
         return Ok(());
     }
 
     let total: usize = counts.iter().map(|(_, c)| c).sum();
-    println!("📦 Items by source:");
+    writeln!(w, "📦 Items by source:")?;
     for (source, count) in &counts {
-        println!("  {} — {}", source, count);
+        writeln!(w, "  {} — {}", source, count)?;
     }
-    println!("  ─────");
-    println!("  Total: {}", total);
+    writeln!(w, "  ─────")?;
+    writeln!(w, "  Total: {}", total)?;
+    Ok(())
+}
+
+fn cmd_list_items(storage: &dyn br1ef_core::storage::Storage, w: &mut impl Write) -> Result<()> {
+    let items = storage.get_items()?;
+
+    if items.is_empty() {
+        writeln!(w, "No items stored. Run `br1ef fetch` first.")?;
+        return Ok(());
+    }
+
+    writeln!(w, "📦 Items:")?;
+    for item in &items {
+        writeln!(w, "{}: {}", item.from, item.mailbox)?;
+
+        let preview: String = item.title.chars().take(50).collect();
+
+        if item.title.chars().count() > 80 {
+            writeln!(w, "  {preview}...")?;
+        } else {
+            writeln!(w, "  {preview}")?;
+        }
+
+        writeln!(w)?;
+    }
+
+    writeln!(w, "  ─────")?;
     Ok(())
 }
 
@@ -186,3 +218,7 @@ fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     config::configure(storage, &fetcher)?;
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "main_test.rs"]
+mod tests;
