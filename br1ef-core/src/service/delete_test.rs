@@ -10,6 +10,7 @@ fn item(id: &str, source: &str) -> Item {
         from: "f".into(),
         body: "b".into(),
         source: source.into(),
+        mailbox: String::new(),
         urgent: false,
     }
 }
