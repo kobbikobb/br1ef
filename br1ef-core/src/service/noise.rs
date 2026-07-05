@@ -13,11 +13,7 @@ pub fn is_noise(item: &Item) -> bool {
 }
 
 pub fn filter_relevant(items: &[Item]) -> Vec<Item> {
-    items
-        .iter()
-        .filter(|i| !is_noise(i))
-        .cloned()
-        .collect()
+    items.iter().filter(|i| !is_noise(i)).cloned().collect()
 }
 
 #[cfg(test)]

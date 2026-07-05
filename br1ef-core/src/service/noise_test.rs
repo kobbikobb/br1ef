@@ -15,25 +15,45 @@ fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
 
 #[test]
 fn is_noise_linkedin_from() {
-    let item = make_item("1", "notifications@linkedin.com", "You have a new message", "body");
+    let item = make_item(
+        "1",
+        "notifications@linkedin.com",
+        "You have a new message",
+        "body",
+    );
     assert!(is_noise(&item));
 }
 
 #[test]
 fn is_noise_linkedin_from_with_name() {
-    let item = make_item("1", "\"LinkedIn\" <invitations@e.linkedin.com>", "Connection request", "body");
+    let item = make_item(
+        "1",
+        "\"LinkedIn\" <invitations@e.linkedin.com>",
+        "Connection request",
+        "body",
+    );
     assert!(is_noise(&item));
 }
 
 #[test]
 fn is_noise_newsletter_in_title() {
-    let item = make_item("1", "newsletter@example.com", "Weekly Newsletter", "lots of content");
+    let item = make_item(
+        "1",
+        "newsletter@example.com",
+        "Weekly Newsletter",
+        "lots of content",
+    );
     assert!(is_noise(&item));
 }
 
 #[test]
 fn is_noise_newsletter_in_subject() {
-    let item = make_item("1", "someone@example.com", "Your Newsletter Issue #42", "body");
+    let item = make_item(
+        "1",
+        "someone@example.com",
+        "Your Newsletter Issue #42",
+        "body",
+    );
     assert!(is_noise(&item));
 }
 
@@ -63,7 +83,12 @@ fn is_noise_noreply() {
 
 #[test]
 fn is_noise_clean_email_not_noise() {
-    let item = make_item("1", "mom@family.com", "Dinner tonight?", "Want to come over?");
+    let item = make_item(
+        "1",
+        "mom@family.com",
+        "Dinner tonight?",
+        "Want to come over?",
+    );
     assert!(!is_noise(&item));
 }
 
@@ -98,7 +123,12 @@ fn filter_relevant_removes_all_noise() {
 fn filter_relevant_mixed_noise_and_clean() {
     let items = vec![
         make_item("1", "mom@family.com", "Dinner?", "Tonight?"),
-        make_item("2", "notifications@linkedin.com", "Connection request", "body"),
+        make_item(
+            "2",
+            "notifications@linkedin.com",
+            "Connection request",
+            "body",
+        ),
         make_item("3", "dad@family.com", "Call me", "Please"),
     ];
     let relevant = filter_relevant(&items);
