@@ -3,14 +3,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
 
-const BAR_WIDTH: usize = 30;
+const SPINNERS: &[&str] = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 pub fn with_progress<T>(prompt: &str, f: impl FnOnce() -> T) -> T {
-    let estimated = estimate_duration(prompt);
     let done = Arc::new(AtomicBool::new(false));
     let bar_done = Arc::clone(&done);
+    let prompt = prompt.to_string();
 
-    let bar = thread::spawn(move || render_progress(estimated, bar_done));
+    let bar = thread::spawn(move || render_spinner(&prompt, bar_done));
 
     let result = f();
 
@@ -23,36 +23,19 @@ pub fn with_progress<T>(prompt: &str, f: impl FnOnce() -> T) -> T {
     result
 }
 
-fn estimate_duration(prompt: &str) -> Duration {
-    let ms = (prompt.len() as f64 / 100.0 * 50.0).clamp(200.0, 5_000.0);
-    Duration::from_millis(ms as u64)
-}
-
-fn render_progress(total: Duration, done: Arc<AtomicBool>) {
-    let start = std::time::Instant::now();
-
+fn render_spinner(prompt: &str, done: Arc<AtomicBool>) {
+    let mut i = 0;
     loop {
         if done.load(Ordering::SeqCst) {
-            let bar = "#".repeat(BAR_WIDTH);
-            eprint!("\r  [{bar}] 100%");
+            eprint!("\r  {prompt}  ✓");
             break;
         }
 
-        let elapsed = start.elapsed();
-        let fraction = (elapsed.as_secs_f64() / total.as_secs_f64()).min(1.0);
-        let filled = (fraction * BAR_WIDTH as f64).round() as usize;
-        let pct = (fraction * 100.0).round() as usize;
+        let s = SPINNERS[i % SPINNERS.len()];
+        eprint!("\r  {s} {prompt}");
+        i += 1;
 
-        let bar: String = std::iter::repeat_n('#', filled)
-            .chain(std::iter::repeat_n('-', BAR_WIDTH - filled))
-            .collect();
-        eprint!("\r  [{bar}] {pct:3}%");
-
-        thread::sleep(if elapsed >= total {
-            Duration::from_millis(200)
-        } else {
-            Duration::from_millis(100)
-        });
+        thread::sleep(Duration::from_millis(100));
     }
 }
 

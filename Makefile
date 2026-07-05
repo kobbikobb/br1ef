@@ -3,9 +3,9 @@
 all: check
 
 do-it-lady:
-	cargo run fetch
-	cargo run digest
-	cargo run daily
+	cargo run -q fetch > /dev/null
+	cargo run -q digest > /dev/null
+	cargo run -q daily > /dev/null
 
 build:
 	cargo build --workspace
