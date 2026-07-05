@@ -66,8 +66,7 @@ impl Storage for InMemoryStorage {
     }
 
     fn get_item_counts_by_source(&self) -> Result<Vec<(String, usize)>> {
-        let mut counts: std::collections::HashMap<String, usize> =
-            std::collections::HashMap::new();
+        let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
         for item in &self.items {
             *counts.entry(item.source.clone()).or_default() += 1;
         }

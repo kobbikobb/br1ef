@@ -98,7 +98,8 @@ fn counts_empty_when_no_items() {
 #[test]
 fn counts_single_source_single_item() {
     let mut s = InMemoryStorage::new();
-    s.store_items(&[make_item_with_source("a", "inbox")]).unwrap();
+    s.store_items(&[make_item_with_source("a", "inbox")])
+        .unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
@@ -148,18 +149,18 @@ fn counts_multiple_sources() {
 #[test]
 fn counts_across_multiple_store_calls() {
     let mut s = InMemoryStorage::new();
-    s.store_items(&[make_item_with_source("a", "social")]).unwrap();
-    s.store_items(&[make_item_with_source("b", "updates")]).unwrap();
-    s.store_items(&[make_item_with_source("c", "social")]).unwrap();
+    s.store_items(&[make_item_with_source("a", "social")])
+        .unwrap();
+    s.store_items(&[make_item_with_source("b", "updates")])
+        .unwrap();
+    s.store_items(&[make_item_with_source("c", "social")])
+        .unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
     assert_eq!(
         counts,
-        vec![
-            ("social".to_string(), 2),
-            ("updates".to_string(), 1),
-        ]
+        vec![("social".to_string(), 2), ("updates".to_string(), 1),]
     );
 }
 

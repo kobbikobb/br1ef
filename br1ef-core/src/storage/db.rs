@@ -172,9 +172,7 @@ impl Storage for SqliteStorage {
     fn get_item_counts_by_source(&self) -> Result<Vec<(String, usize)>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
-            .prepare(
-                "SELECT source, COUNT(*) FROM items GROUP BY source ORDER BY source",
-            )
+            .prepare("SELECT source, COUNT(*) FROM items GROUP BY source ORDER BY source")
             .context("failed to prepare count query")?;
         let rows = stmt
             .query_map([], |row| {
