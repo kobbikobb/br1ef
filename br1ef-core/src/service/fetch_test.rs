@@ -235,3 +235,63 @@ fn fetch_items_reports_stats_per_mailbox() {
     assert_eq!(result.per_mailbox[1].total, 2);
     assert_eq!(result.per_mailbox[1].new, 1);
 }
+
+#[test]
+fn fetch_items_includes_category_mailboxes_when_inbox_selected() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .set_selected_mailboxes(&["INBOX".into(), "@@CATEGORY@@/Social".into()])
+        .unwrap();
+
+    let fetcher = MailboxMapFetcher(HashMap::from([
+        (
+            "INBOX".into(),
+            vec![item("1", "Inbox Mail"), item("2", "Inbox Note")],
+        ),
+        (
+            "@@CATEGORY@@/Social".into(),
+            vec![item("3", "Social Post That Is Not In Inbox")],
+        ),
+    ]));
+
+    let result = fetch_items(&mut storage, &fetcher);
+
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.items.len(), 3);
+    assert_eq!(result.per_mailbox.len(), 2);
+    assert_eq!(result.per_mailbox[1].name, "@@CATEGORY@@/Social");
+    assert_eq!(result.per_mailbox[1].total, 1);
+    assert_eq!(result.per_mailbox[1].new, 1);
+
+    let stored = storage.get_items().unwrap();
+    assert_eq!(stored.len(), 3);
+}
+
+#[test]
+fn fetch_items_deduplicates_category_with_inbox() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .set_selected_mailboxes(&["INBOX".into(), "@@CATEGORY@@/Social".into()])
+        .unwrap();
+
+    let fetcher = MailboxMapFetcher(HashMap::from([
+        (
+            "INBOX".into(),
+            vec![item("1", "Inbox Also In Social")],
+        ),
+        (
+            "@@CATEGORY@@/Social".into(),
+            vec![item("1", "Inbox Also In Social")],
+        ),
+    ]));
+
+    let result = fetch_items(&mut storage, &fetcher);
+
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.items.len(), 1);
+    assert_eq!(result.per_mailbox.len(), 2);
+    assert_eq!(result.per_mailbox[0].new, 1);
+    assert_eq!(result.per_mailbox[1].new, 0);
+}
