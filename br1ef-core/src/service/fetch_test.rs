@@ -276,10 +276,7 @@ fn fetch_items_deduplicates_category_with_inbox() {
         .unwrap();
 
     let fetcher = MailboxMapFetcher(HashMap::from([
-        (
-            "INBOX".into(),
-            vec![item("1", "Inbox Also In Social")],
-        ),
+        ("INBOX".into(), vec![item("1", "Inbox Also In Social")]),
         (
             "@@CATEGORY@@/Social".into(),
             vec![item("1", "Inbox Also In Social")],
