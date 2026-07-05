@@ -2,6 +2,7 @@ mod daily;
 pub mod dedup;
 mod digest;
 mod fetch;
+pub mod noise;
 
 pub use daily::get_daily_items;
 pub use dedup::dedup_threads;

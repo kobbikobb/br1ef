@@ -59,31 +59,16 @@ fn build_prompt(items: &[Item]) -> String {
         );
     }
 
-    let today = chrono::Utc::now().format("%B %e, %Y");
+    let today = chrono::Utc::now().format("%B %-e, %Y");
 
     format!(
-        "You are a personal assistant reviewing today's email.\n\
-         Today is {today}.\n\
-         Below are emails from the last week. Only use the information from these\n\
-         emails — do not include anything not present in the emails above.\n\n\
-         {email_list}\n\
-         Categorize and summarize as follows:\n\n\
-         ## Personal & Action Required\n\
-         Include personal messages from people I know, children's school\n\
-         events/notices, personal event invitations, Iceland-specific items\n\
-         (taxes, government, utilities, local matters), and anything\n\
-         requiring a response or action from me.\n\
-         If an email is from someone you know but is primarily selling\n\
-         something, treat it as commercial and skip it.\n\n\
-         ## Everything Else\n\
-         Briefly mention anything else genuinely interesting, but IGNORE:\n\
-         - Commercial emails, marketing, ads, and promotional content\n\
-         - LinkedIn notifications and recruitment pitches\n\
-         - Media highlights and news summaries (unless they reference you\n\
-           or your family by name)\n\
-         - Anything that looks like someone selling something\n\n\
-         If nothing needs attention or there are no actionable items, say so.\n\
-         Keep it concise, under 200 words.",
+        "Today is {today}. Below are emails from the last week.\n\n\
+         {email_list}\
+         Only use the information from these emails — do not add anything\n\
+         not present in the emails above.\n\n\
+         List personal messages and action items concisely. Skip commercial\n\
+         emails, newsletters, and LinkedIn notifications. No section headers\n\
+         or categories. Under 150 words.",
     )
 }
 
@@ -99,3 +84,7 @@ fn truncate(s: &str, max: usize) -> &str {
         .unwrap_or(0);
     &s[..cut]
 }
+
+#[cfg(test)]
+#[path = "ollama_test.rs"]
+mod tests;

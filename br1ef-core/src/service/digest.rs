@@ -5,18 +5,22 @@ use chrono::Utc;
 
 use crate::agent::Agent;
 use crate::service::dedup::dedup_threads;
+use crate::service::noise;
 use crate::storage::Storage;
 
 pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> {
     let items = storage.get_items()?;
     let items = dedup_threads(items);
+    let relevant = noise::filter_relevant(&items);
 
     let summary = if items.is_empty() {
         "No items to summarize.".to_string()
+    } else if relevant.is_empty() {
+        "Nothing needs attention today.".to_string()
     } else {
-        let n = items.len();
-        let bytes: usize = items.iter().map(|i| i.body.len()).sum();
-        let words: usize = items
+        let n = relevant.len();
+        let bytes: usize = relevant.iter().map(|i| i.body.len()).sum();
+        let words: usize = relevant
             .iter()
             .map(|i| i.body.split_whitespace().count())
             .sum();
@@ -28,7 +32,7 @@ pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> 
         eprintln!("  📖 Digesting {n} item(s) ({size}, {words} words)…");
 
         let start = std::time::Instant::now();
-        let summary = agent.summarize_items(&items)?;
+        let summary = agent.summarize_items(&relevant)?;
         let elapsed = start.elapsed();
 
         eprintln!("  ✨ Digest ready — {:.1}s.", elapsed.as_secs_f64());
