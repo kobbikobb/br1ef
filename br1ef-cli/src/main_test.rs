@@ -172,7 +172,7 @@ fn list_items_multiple_items() {
 }
 
 #[test]
-fn test_app_config_defaults_incomplete() {
+fn app_config_defaults_incomplete() {
     let cfg = AppConfig::defaults();
     assert!(!cfg.is_complete());
     assert!(cfg.imap_host.is_empty());
@@ -182,7 +182,7 @@ fn test_app_config_defaults_incomplete() {
 }
 
 #[test]
-fn test_app_config_is_complete() {
+fn app_config_is_complete() {
     let cfg = AppConfig {
         imap_host: "imap.example.com".into(),
         imap_port: 993,
@@ -194,7 +194,7 @@ fn test_app_config_is_complete() {
 }
 
 #[test]
-fn test_app_config_missing_host_not_complete() {
+fn app_config_missing_host_not_complete() {
     let cfg = AppConfig {
         imap_host: "".into(),
         imap_port: 993,
@@ -206,7 +206,7 @@ fn test_app_config_missing_host_not_complete() {
 }
 
 #[test]
-fn test_load_config_errors_on_incomplete() {
+fn load_config_errors_on_incomplete() {
     let storage = InMemoryStorage::new();
     let result = load_config(&storage);
     assert!(result.is_err());
@@ -215,7 +215,7 @@ fn test_load_config_errors_on_incomplete() {
 }
 
 #[test]
-fn test_load_config_ok_on_complete() {
+fn load_config_ok_on_complete() {
     let mut storage = InMemoryStorage::new();
     let cfg = AppConfig {
         imap_host: "imap.example.com".into(),
@@ -231,7 +231,7 @@ fn test_load_config_ok_on_complete() {
 }
 
 #[test]
-fn test_app_config_roundtrip_in_memory() {
+fn app_config_roundtrip_in_memory() {
     let mut storage = InMemoryStorage::new();
     let cfg = AppConfig {
         imap_host: "imap.test.com".into(),
@@ -248,7 +248,7 @@ fn test_app_config_roundtrip_in_memory() {
 }
 
 #[test]
-fn test_br1ef_app_config_roundtrip_sqlite() {
+fn app_config_roundtrip_sqlite() {
     use br1ef_core::storage::SqliteStorage;
     let mut storage = SqliteStorage::new(":memory:").unwrap();
     let cfg = AppConfig {
@@ -264,4 +264,79 @@ fn test_br1ef_app_config_roundtrip_sqlite() {
     assert_eq!(loaded.imap_host, "imap.test.com");
     assert_eq!(loaded.imap_password, "p@ss|word");
     assert_eq!(loaded.imap_port, 993);
+}
+
+#[test]
+fn display_name_strips_gmail_category() {
+    assert_eq!(config::display_name("@@CATEGORY@@/Social"), "Social");
+    assert_eq!(config::display_name("@@CATEGORY@@/Updates"), "Updates");
+}
+
+#[test]
+fn display_name_passthrough_normal() {
+    assert_eq!(config::display_name("INBOX"), "INBOX");
+    assert_eq!(config::display_name("Sent"), "Sent");
+    assert_eq!(config::display_name(""), "");
+}
+
+#[test]
+fn display_name_gmail_category_prefix() {
+    let prefix = br1ef_core::fetcher::GMAIL_CATEGORY_PREFIX;
+    assert_eq!(config::display_name(&format!("{prefix}Forums")), "Forums");
+}
+
+#[test]
+fn parse_port_valid() {
+    assert_eq!(config::parse_port("993", 0), 993);
+    assert_eq!(config::parse_port("143", 0), 143);
+    assert_eq!(config::parse_port("1", 0), 1);
+}
+
+#[test]
+fn parse_port_zero_falls_back() {
+    assert_eq!(config::parse_port("0", 993), 993);
+    assert_eq!(config::parse_port("0", 143), 143);
+}
+
+#[test]
+fn parse_port_invalid_falls_back() {
+    assert_eq!(config::parse_port("abc", 993), 993);
+    assert_eq!(config::parse_port("", 993), 993);
+    assert_eq!(config::parse_port("-1", 993), 993);
+    assert_eq!(config::parse_port("  ", 993), 993);
+}
+
+#[test]
+fn parse_port_trim_whitespace() {
+    assert_eq!(config::parse_port("  993  ", 0), 993);
+    assert_eq!(config::parse_port(" 143\n", 0), 143);
+}
+
+#[test]
+fn app_config_missing_username_not_complete() {
+    let cfg = AppConfig {
+        imap_host: "imap.example.com".into(),
+        imap_username: "".into(),
+        imap_password: "secret".into(),
+        ..AppConfig::defaults()
+    };
+    assert!(!cfg.is_complete());
+}
+
+#[test]
+fn app_config_missing_password_not_complete() {
+    let cfg = AppConfig {
+        imap_host: "imap.example.com".into(),
+        imap_username: "user".into(),
+        imap_password: "".into(),
+        ..AppConfig::defaults()
+    };
+    assert!(!cfg.is_complete());
+}
+
+#[test]
+fn app_config_default_trait() {
+    let cfg: AppConfig = Default::default();
+    assert!(!cfg.is_complete());
+    assert_eq!(cfg.imap_port, 993);
 }

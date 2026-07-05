@@ -90,13 +90,6 @@ fn print_help() {
     println!("For more information, visit https://github.com/kobbikobb/br1ef");
 }
 
-fn display_mailbox(name: &str) -> &str {
-    if let Some(cat) = name.strip_prefix("@@CATEGORY@@/") {
-        return cat;
-    }
-    name
-}
-
 fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     let cfg = load_config(storage)?;
     let fetcher = ImapFetcher::new(
@@ -112,7 +105,7 @@ fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     for stats in &result.per_mailbox {
         println!(
             "  ✅ {} — {} new ({} total)",
-            display_mailbox(&stats.name),
+            config::display_name(&stats.name),
             stats.new,
             stats.total,
         );
@@ -176,7 +169,7 @@ fn cmd_count_items(storage: &dyn br1ef_core::storage::Storage, w: &mut impl Writ
         if mailbox.is_empty() {
             writeln!(w, "    (unknown) — {count}")?;
         } else {
-            writeln!(w, "    {} — {count}", display_mailbox(mailbox))?;
+            writeln!(w, "    {} — {count}", config::display_name(mailbox))?;
         }
     }
     writeln!(w, "  ─────")?;
@@ -234,18 +227,17 @@ fn cmd_delete_items(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()
 }
 
 fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
-    let fetcher = storage.get_app_config().ok().and_then(|cfg| {
-        if cfg.is_complete() {
-            Some(ImapFetcher::new(
-                &cfg.imap_host,
-                cfg.imap_port,
-                &cfg.imap_username,
-                &cfg.imap_password,
-            ))
-        } else {
-            None
-        }
-    });
+    let cfg = storage.get_app_config()?;
+    let fetcher = if cfg.is_complete() {
+        Some(ImapFetcher::new(
+            &cfg.imap_host,
+            cfg.imap_port,
+            &cfg.imap_username,
+            &cfg.imap_password,
+        ))
+    } else {
+        None
+    };
     config::configure(
         storage,
         fetcher

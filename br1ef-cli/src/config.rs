@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
-use br1ef_core::storage::Storage;
+use br1ef_core::storage::{AppConfig, Storage};
 
-fn display_name(raw: &str) -> &str {
+pub fn display_name(raw: &str) -> &str {
     if let Some(cat) = raw.strip_prefix(GMAIL_CATEGORY_PREFIX) {
         return cat;
     }
@@ -35,8 +35,6 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
     cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model)
         .with_context(|| "Failed to read Ollama model")?;
 
-    storage.set_app_config(&cfg)?;
-
     // Step 2: mailbox selection
     let mailboxes: Vec<String> = if let Some(f) = fetcher {
         f.list_mailboxes().map_err(|e| anyhow::anyhow!("Cannot connect to mail server — can't select mailboxes without connection settings configured: {}", e))?
@@ -44,17 +42,26 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         vec![]
     };
 
-    if !mailboxes.is_empty() {
+    if mailboxes.is_empty() {
         println!("\nStep 2/3 — Mailbox Selection");
-        for (i, name) in mailboxes.iter().enumerate() {
-            let marker = if name == "INBOX" { " (default)" } else { "" };
-            let suffix = if name.starts_with(GMAIL_CATEGORY_PREFIX) {
-                " (category)"
-            } else {
-                ""
-            };
-            println!("  {:2}. {}{}{}", i + 1, display_name(name), marker, suffix);
-        }
+        println!("  (no mailboxes available — connect to IMAP server to see mailbox list)");
+        println!("  Defaulting to INBOX.");
+        let sel = vec!["INBOX".to_string()];
+        storage.set_app_config(&cfg)?;
+        storage.set_selected_mailboxes(&sel)?;
+        finish(&cfg, storage)?;
+        return Ok(());
+    }
+
+    println!("\nStep 2/3 — Mailbox Selection");
+    for (i, name) in mailboxes.iter().enumerate() {
+        let marker = if name == "INBOX" { " (default)" } else { "" };
+        let suffix = if name.starts_with(GMAIL_CATEGORY_PREFIX) {
+            " (category)"
+        } else {
+            ""
+        };
+        println!("  {:2}. {}{}{}", i + 1, display_name(name), marker, suffix);
     }
 
     println!("\nINBOX always selected.");
@@ -91,9 +98,12 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         selected
     };
 
+    storage.set_app_config(&cfg)?;
     storage.set_selected_mailboxes(&sel)?;
+    finish(&cfg, storage)
+}
 
-    // Step 3: confirmation
+fn finish(cfg: &AppConfig, storage: &dyn Storage) -> Result<()> {
     println!("\nStep 3/3 — Config Complete!");
     let disp = |val: &str, default: &str| -> String {
         if val.is_empty() || val == default {
@@ -140,12 +150,16 @@ fn ask(prompt: &str, current: &str) -> Result<String> {
     Ok(input.trim().to_string())
 }
 
+pub fn parse_port(input: &str, current: u16) -> u16 {
+    match input.trim().parse::<u16>() {
+        Ok(p) if p > 0 => p,
+        _ => current,
+    }
+}
+
 fn ask_port(current: &u16) -> Result<u16> {
     let mut input = String::new();
     print!("IMAP port (current: {}): ", current);
     std::io::stdin().read_line(&mut input)?;
-    match input.trim().to_string().parse::<u16>() {
-        Ok(p) => Ok(p),
-        Err(_) => Ok(*current),
-    }
+    Ok(parse_port(&input, *current))
 }
