@@ -8,6 +8,7 @@ mod tests;
 use rusqlite::Connection;
 
 use crate::storage::Storage;
+use crate::storage::AppConfig;
 use crate::{Digest, Item};
 
 pub struct SqliteStorage {
@@ -40,6 +41,10 @@ impl SqliteStorage {
             );
             CREATE TABLE IF NOT EXISTS selected_mailboxes (
                 name TEXT PRIMARY KEY
+            );
+            CREATE TABLE IF NOT EXISTS app_config (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
             );",
         )
         .context("failed to create tables")?;
@@ -280,5 +285,46 @@ impl Storage for SqliteStorage {
             summary,
             generated_at,
         }))
+    }
+
+    fn get_app_config(&self) -> Result<AppConfig> {
+        let conn = self.conn.lock().unwrap();
+        let default = AppConfig::defaults();
+
+        let row: Option<String> = conn
+            .query_row("SELECT value FROM app_config WHERE key = ?1", ["get"], |row| row.get(0))
+            .ok();
+
+        match row {
+            Some(v) => {
+                let vals: Vec<&str> = v.split('|').collect();
+                if vals.len() >= 6 {
+                    Ok(AppConfig {
+                        imap_host: vals[0].to_string(),
+                        imap_port: vals[1].parse().unwrap_or(default.imap_port),
+                        imap_username: vals[2].to_string(),
+                        imap_password: vals[3].to_string(),
+                        ollama_base_url: vals[4].to_string(),
+                        ollama_model: vals[5].to_string(),
+                    })
+                } else {
+                    Ok(default)
+                }
+            }
+            None => Ok(default),
+        }
+    }
+
+    fn set_app_config(&mut self, cfg: &AppConfig) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let val = format!("{}|{}|{}|{}|{}|{}", 
+            cfg.imap_host, cfg.imap_port, cfg.imap_username, cfg.imap_password, 
+            cfg.ollama_base_url, cfg.ollama_model);
+        conn.execute(
+            "INSERT OR REPLACE INTO app_config (key, value) VALUES (?1, ?2)",
+            ["get", val],
+        ).context("failed to save app_config")?;
+
+        Ok(())
     }
 }

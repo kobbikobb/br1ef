@@ -4,13 +4,14 @@ use anyhow::Result;
 #[path = "memory_test.rs"]
 mod tests;
 
-use crate::storage::Storage;
+use crate::storage::{AppConfig, Storage};
 use crate::{Digest, Item};
 
 pub struct InMemoryStorage {
     items: Vec<Item>,
     digest: Option<Digest>,
     selected_mailboxes: Vec<String>,
+    app_config: AppConfig,
 }
 
 impl InMemoryStorage {
@@ -19,6 +20,7 @@ impl InMemoryStorage {
             items: Vec::new(),
             digest: None,
             selected_mailboxes: Vec::new(),
+            app_config: AppConfig::defaults(),
         }
     }
 }
@@ -93,5 +95,14 @@ impl Storage for InMemoryStorage {
 
     fn get_digest(&self) -> Result<Option<Digest>> {
         Ok(self.digest.clone())
+    }
+
+    fn get_app_config(&self) -> Result<AppConfig> {
+        Ok(self.app_config.clone())
+    }
+
+    fn set_app_config(&mut self, cfg: &AppConfig) -> Result<()> {
+        self.app_config = cfg.clone();
+        Ok(())
     }
 }
