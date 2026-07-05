@@ -1,49 +1,50 @@
-.PHONY: all do-it-lady build test lint fmt audit check
+.PHONY: all do-it-lady build test lint fmt audit check help config fetch count-items list-items delete-items digest daily
 
-build:
-	cargo build --workspace
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-test:
-	cargo test --workspace
-
-lint:
-	cargo clippy --workspace -- -D warnings
-
-fmt:
-	cargo fmt
-
-fmt-chk:
-	cargo fmt --check
-
-audit:
-	cargo audit
-
-all: check
-
-check: build lint fmt audit test
-
-config:
+config: ## Configure br1ef preferences
 	cargo run config
 
-fetch:
+fetch: ### Fetch raw data from configured sources
 	cargo run fetch
 
-count-items:
+count-items: ## Show stored item counts by source
 	cargo run count-items
 
-list-items:
+list-items: ## Show stored item info
 	cargo run list-items
 
-delete-items:
+delete-items: ## Delete all stored items
 	cargo run delete-items
 
-digest:
+digest: ## Digest fetched data into a brief
 	cargo run digest
 
-daily:
+daily: ## Show the daily brief
 	cargo run daily
 
-do-it-lady:
-	cargo run -q fetch
-	cargo run -q digest
-	cargo run -q daily
+build: ## Build the workspace
+	cargo build --workspace
+
+test: ## Run tests
+	cargo test --workspace
+
+lint: ## Run clippy (deny warnings)
+	cargo clippy --workspace -- -D warnings
+
+fmt: ## Format source files (write mode)
+	cargo fmt
+
+fmt-chk: ## Check formatting (dry-run)
+	cargo fmt --check
+
+audit: ## Audit dependencies for vulnerabilities
+	cargo audit
+
+all: check ## Run check target
+
+check: build lint fmt audit test ## Build + lint + fmt + audit + test
+
+do-it-lady: fetch digest daily ## Quick pipeline: fetch → digest → daily (quiet)
+	cargo run -q fetch && cargo run -q digest && cargo run -q daily
