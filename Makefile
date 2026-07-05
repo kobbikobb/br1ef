@@ -37,6 +37,9 @@ list-items:
 delete-items:
 	cargo run delete-items
 
+digest:
+	cargo run digest
+
 do-it-lady:
 	cargo run -q fetch
 	cargo run -q digest
