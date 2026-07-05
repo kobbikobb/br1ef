@@ -59,7 +59,8 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
             let mut input = String::new();
             std::io::stdin().read_line(&mut input)?;
             if let Ok(idx) = input.trim().parse::<usize>()
-                && idx > 0 && idx <= models.len()
+                && idx > 0
+                && idx <= models.len()
             {
                 cfg.ollama_model = models[idx - 1].clone();
             }
