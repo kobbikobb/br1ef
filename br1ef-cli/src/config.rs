@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
-use br1ef_core::storage::{AppConfig, Storage};
+use br1ef_core::storage::Storage;
 
 fn display_name(raw: &str) -> &str {
     if let Some(cat) = raw.strip_prefix(GMAIL_CATEGORY_PREFIX) {
@@ -45,7 +45,7 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         for (i, name) in mailboxes.iter().enumerate() {
             let marker = if name == "INBOX" { " (default)" } else { "" };
             let suffix = if name.starts_with(GMAIL_CATEGORY_PREFIX) { " (category)" } else { "" };
-            println!("  {:2}. {}{}", i + 1, display_name(name), marker, suffix);
+            println!("  {:2}. {}{}{}", i + 1, display_name(name), marker, suffix);
         }
     }
 
@@ -60,23 +60,22 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
             .filter(|m| m.starts_with(GMAIL_CATEGORY_PREFIX))
             .cloned()
             .collect();
-        if !mailboxes.contains(&"INBOX".to_string()) {
-            vec!["INBOX".into()]
-        } else if cats.is_empty() {
-            vec!["INBOX".into()]
-        } else {
-            let mut s = vec!["INBOX".into()];
-            s.extend(cats);
-            s
-        }
+        let mut s = vec!["INBOX".into()];
+        s.extend(cats);
+        s
     } else if input.trim().eq_ignore_ascii_case("all") {
         mailboxes.clone()
     } else {
+        let mut seen = std::collections::HashSet::new();
+        seen.insert("INBOX".to_string());
         let mut selected = vec!["INBOX".to_string()];
         for part in input.split(',') {
             if let Ok(idx) = part.trim().parse::<usize>() {
                 if idx > 0 && idx <= mailboxes.len() {
-                    selected.push(mailboxes[idx - 1].clone());
+                    let name = mailboxes[idx - 1].clone();
+                    if seen.insert(name.clone()) {
+                        selected.push(name);
+                    }
                 }
             }
         }
@@ -87,12 +86,12 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
 
     // Step 3: confirmation
     println!("\nStep 3/3 — Config Complete!");
-    let show = |val: &str, default: &str| {
-        if val.is_empty() || val == default { "<default>" } else { val }
+    let disp = |val: &str, default: &str| -> String {
+        if val.is_empty() || val == default { "<default>".into() } else { val.to_string() }
     };
-    println!(r#"  IMAP host:     {}"#, show(&cfg.imap_host, ""));
-    println!("  Ollama URL:    {}", show(&cfg.ollama_base_url, "http://localhost:11434"));
-    println!("  Ollama model:  {}", show(&cfg.ollama_model, "llama3.2:1b"));
+    println!(r#"  IMAP host:     {}"#, disp(&cfg.imap_host, ""));
+    println!("  Ollama URL:    {}", disp(&cfg.ollama_base_url, "http://localhost:11434"));
+    println!("  Ollama model:  {}", disp(&cfg.ollama_model, "llama3.2:1b"));
 
     let mbx = storage.get_selected_mailboxes()?;
     println!("  Mailboxes:     {} ({} in total)", mbx.iter().map(|m| display_name(m)).collect::<Vec<_>>().join(", "), mbx.len());

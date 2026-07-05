@@ -1,7 +1,7 @@
 mod config;
 
 use anyhow::Result;
-use br1ef_core::agent::{Agent, OllamaAgent};
+use br1ef_core::agent::OllamaAgent;
 use br1ef_core::fetcher::ImapFetcher;
 use br1ef_core::service;
 use br1ef_core::storage::{AppConfig, SqliteStorage};
@@ -58,7 +58,7 @@ fn main() -> Result<()> {
     }
 }
 
-fn load_config(storage: &SqliteStorage) -> Result<AppConfig> {
+fn load_config(storage: &dyn br1ef_core::storage::Storage) -> Result<AppConfig> {
     let cfg = storage.get_app_config()?;
     anyhow::ensure!(cfg.is_complete(),
         "Configuration incomplete. Run `br1ef config` to set up IMAP credentials and Ollama settings.");
@@ -229,49 +229,17 @@ fn cmd_delete_items(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()
 }
 
 fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
-    let cfg = storage.get_app_config()?;
-    let fetcher = if cfg.is_complete() {
-        ImapFetcher::new(
-            &cfg.imap_host, cfg.imap_port, &cfg.imap_username, &cfg.imap_password
-        )
-    } else {
-        // Try to create a fetcher from whatever is configured (if anything)
-        if !cfg.imap_host.is_empty() && !cfg.imap_username.is_empty() && !cfg.imap_password.is_empty() {
-            ImapFetcher::new(
-                &cfg.imap_host, cfg.imap_port, &cfg.imap_username, &cfg.imap_password
-            )
+    let fetcher = storage.get_app_config().ok().and_then(|cfg| {
+        if cfg.is_complete() {
+            Some(ImapFetcher::new(&cfg.imap_host, cfg.imap_port, &cfg.imap_username, &cfg.imap_password))
         } else {
-            // Nothing configured yet — no mailbox selection step
-            return config::configure(storage, None)?;
+            None
         }
-    };
-
-    // Try to list mailboxes for the user; if it fails, proceed without mailbox selection
-    let can_reach_mailserver = fetcher.list_mailboxes().is_ok();
-    let f = if can_reach_mailserver { Some(&fetcher as &dyn br1ef_core::fetcher::Fetcher) } else { None };
-
-    config::configure(storage, f)?;
+    });
+    config::configure(storage, fetcher.as_ref().map(|f| f as &dyn br1ef_core::fetcher::Fetcher))?;
     Ok(())
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use br1ef_core::storage::InMemoryStorage;
-
-    #[test]
-    fn test_cmd_daily_no_digest() {
-        let storage: InMemoryStorage = InMemoryStorage::new();
-        match cmd_daily(&storage) {
-            Ok(()) => {}, // expects to print message
-            Err(e) => panic!("Expected success: {e}"),
-        }
-    }
-
-    #[test]
-    fn test_load_config_incomplete() {
-        let mut storage = InMemoryStorage::new();
-        let result = load_config(&SqliteStorage::new(":memory:").unwrap());
-        assert!(result.is_err());
-    }
-}
+#[path = "main_test.rs"]
+mod tests;
