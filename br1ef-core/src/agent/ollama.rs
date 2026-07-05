@@ -22,24 +22,26 @@ impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
         let prompt = build_prompt(items);
 
-        #[derive(Deserialize)]
-        struct GenerateResponse {
-            response: String,
-        }
+        crate::progress::with_progress(&prompt, || {
+            #[derive(Deserialize)]
+            struct GenerateResponse {
+                response: String,
+            }
 
-        let body = serde_json::json!({
-            "model": self.model,
-            "prompt": prompt,
-            "stream": false,
-        });
+            let body = serde_json::json!({
+                "model": self.model,
+                "prompt": prompt,
+                "stream": false,
+            });
 
-        let resp: GenerateResponse = ureq::post(&format!("{}/api/generate", self.base_url))
-            .send_json(&body)
-            .context("failed to call Ollama API")?
-            .into_json()
-            .context("failed to parse Ollama response")?;
+            let resp: GenerateResponse = ureq::post(&format!("{}/api/generate", self.base_url))
+                .send_json(&body)
+                .context("failed to call Ollama API")?
+                .into_json()
+                .context("failed to parse Ollama response")?;
 
-        Ok(resp.response.trim().to_string())
+            Ok::<_, anyhow::Error>(resp.response.trim().to_string())
+        })
     }
 }
 
