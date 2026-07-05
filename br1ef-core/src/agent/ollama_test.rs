@@ -1,6 +1,6 @@
 use crate::Item;
 
-use super::{build_prompt, truncate};
+use super::{build_prompt, parse_list_response, truncate};
 
 fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
     Item {
@@ -100,4 +100,44 @@ fn truncate_unicode_two_chars() {
     let s = "a🎉bcdef";
     let t = truncate(s, 6);
     assert_eq!(t, "a🎉b");
+}
+
+#[test]
+fn parse_list_response_empty() {
+    let names = parse_list_response(r#"{"models":[]}"#).unwrap();
+    assert!(names.is_empty());
+}
+
+#[test]
+fn parse_list_response_single() {
+    let names = parse_list_response(r#"{"models":[{"name":"llama3.2:1b"}]}"#).unwrap();
+    assert_eq!(names, vec!["llama3.2:1b"]);
+}
+
+#[test]
+fn parse_list_response_multiple() {
+    let json = r#"{
+        "models": [
+            {"name": "qwen2.5-coder:7b"},
+            {"name": "llama3.2:1b"},
+            {"name": "mistral:latest"}
+        ]
+    }"#;
+    let names = parse_list_response(json).unwrap();
+    assert_eq!(
+        names,
+        vec!["llama3.2:1b", "mistral:latest", "qwen2.5-coder:7b"]
+    );
+}
+
+#[test]
+fn parse_list_response_invalid_json() {
+    let result = parse_list_response("not json");
+    assert!(result.is_err());
+}
+
+#[test]
+fn parse_list_response_missing_models_field() {
+    let result = parse_list_response(r#"{"other":true}"#);
+    assert!(result.is_err());
 }

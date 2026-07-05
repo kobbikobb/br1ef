@@ -254,7 +254,7 @@ fn app_config_empty_table_returns_defaults() {
 
     let cfg = s.get_app_config().unwrap();
 
-    assert_eq!(cfg.imap_host, "");
+    assert_eq!(cfg.imap_host, "imap.gmail.com");
     assert_eq!(cfg.imap_port, 993);
     assert_eq!(cfg.ollama_base_url, "http://localhost:11434");
     assert!(!cfg.is_complete());

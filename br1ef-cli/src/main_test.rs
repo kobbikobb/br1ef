@@ -175,10 +175,10 @@ fn list_items_multiple_items() {
 fn app_config_defaults_incomplete() {
     let cfg = AppConfig::defaults();
     assert!(!cfg.is_complete());
-    assert!(cfg.imap_host.is_empty());
+    assert_eq!(cfg.imap_host, "imap.gmail.com");
     assert_eq!(cfg.imap_port, 993);
     assert_eq!(cfg.ollama_base_url, "http://localhost:11434");
-    assert_eq!(cfg.ollama_model, "llama3.2:1b");
+    assert_eq!(cfg.ollama_model, "qwen2.5-coder:7b");
 }
 
 #[test]

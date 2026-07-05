@@ -42,8 +42,33 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
     println!();
     cfg.ollama_base_url = ask("Ollama base URL", &cfg.ollama_base_url)
         .with_context(|| "Failed to read Ollama URL")?;
-    cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model)
-        .with_context(|| "Failed to read Ollama model")?;
+
+    match br1ef_core::agent::list_ollama_models(&cfg.ollama_base_url) {
+        Ok(models) if !models.is_empty() => {
+            println!("\nAvailable models:");
+            for (i, name) in models.iter().enumerate() {
+                let current = if *name == cfg.ollama_model {
+                    " (current)"
+                } else {
+                    ""
+                };
+                println!("  {:2}. {}{}", i + 1, name, current);
+            }
+            print!("Select model (number, or Enter for current): ");
+            std::io::Write::flush(&mut std::io::stdout())?;
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input)?;
+            if let Ok(idx) = input.trim().parse::<usize>()
+                && idx > 0 && idx <= models.len()
+            {
+                cfg.ollama_model = models[idx - 1].clone();
+            }
+        }
+        _ => {
+            cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model)
+                .with_context(|| "Failed to read Ollama model")?;
+        }
+    }
 
     // Step 2: mailbox selection
     let mailboxes: Vec<String> = if let Some(f) = fetcher {
