@@ -22,6 +22,9 @@ all: check
 
 check: build lint fmt audit test
 
+config:
+	cargo run config
+
 fetch:
 	cargo run fetch
 
