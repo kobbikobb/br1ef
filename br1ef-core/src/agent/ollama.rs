@@ -18,20 +18,9 @@ impl OllamaAgent {
     }
 }
 
-fn filter_relevant(items: &[Item]) -> Vec<&Item> {
-    items.iter().filter(|i| !is_noise(i)).collect()
-}
-
 impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
-        let relevant = filter_relevant(items);
-
-        if relevant.is_empty() {
-            return Ok("Nothing needs attention today.".to_string());
-        }
-
-        let owned: Vec<Item> = relevant.into_iter().cloned().collect();
-        let prompt = build_prompt(&owned);
+        let prompt = build_prompt(items);
 
         crate::progress::with_progress(&prompt, || {
             #[derive(Deserialize)]
@@ -54,18 +43,6 @@ impl Agent for OllamaAgent {
             Ok::<_, anyhow::Error>(resp.response.trim().to_string())
         })
     }
-}
-
-fn is_noise(item: &Item) -> bool {
-    let from_lower = item.from.to_lowercase();
-    let title_lower = item.title.to_lowercase();
-
-    from_lower.contains("linkedin.com")
-        || title_lower.contains("newsletter")
-        || from_lower.contains("newsletter@")
-        || from_lower.contains("marketing")
-        || from_lower.contains("no-reply")
-        || from_lower.contains("noreply")
 }
 
 fn build_prompt(items: &[Item]) -> String {

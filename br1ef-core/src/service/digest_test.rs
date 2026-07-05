@@ -33,6 +33,17 @@ fn make_item(id: &str, source: &str, body: &str) -> Item {
     }
 }
 
+fn make_item_from(id: &str, from: &str, title: &str) -> Item {
+    Item {
+        id: id.to_string(),
+        title: title.to_string(),
+        from: from.to_string(),
+        body: "body".to_string(),
+        source: "imap".to_string(),
+        urgent: false,
+    }
+}
+
 #[test]
 fn digest_items_empty_returns_placeholder_summary() {
     let mut storage = InMemoryStorage::new();
@@ -154,4 +165,70 @@ fn digest_items_by_source_aggregates_multiple_sources() {
     let sources: std::collections::HashMap<_, _> = digest.by_source.into_iter().collect();
     assert_eq!(sources.get("imap"), Some(&2));
     assert_eq!(sources.get("slack"), Some(&2));
+}
+
+#[test]
+fn digest_items_all_noise_short_circuits_without_calling_agent() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .store_items(&[
+            make_item_from("1", "notifications@linkedin.com", "New message"),
+            make_item_from("2", "newsletter@substack.com", "Weekly Issue"),
+        ])
+        .unwrap();
+    let agent = MockAgent {
+        should_fail: false,
+        summary: "should not be called".to_string(),
+    };
+
+    digest_items(&mut storage, &agent).unwrap();
+
+    let digest = storage.get_digest().unwrap().unwrap();
+    assert_eq!(digest.total_items, 2);
+    assert_eq!(digest.summary, "Nothing needs attention today.");
+    assert_eq!(digest.by_source, vec![("imap".to_string(), 2)]);
+}
+
+#[test]
+fn digest_items_mixed_noise_and_clean_only_passes_clean_to_agent() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .store_items(&[
+            make_item_from("1", "mom@family.com", "Dinner tonight?"),
+            make_item_from("2", "notifications@linkedin.com", "Connection request"),
+            make_item_from("3", "dad@family.com", "Call me"),
+        ])
+        .unwrap();
+    let agent = MockAgent {
+        should_fail: false,
+        summary: "Family matters".to_string(),
+    };
+
+    digest_items(&mut storage, &agent).unwrap();
+
+    let digest = storage.get_digest().unwrap().unwrap();
+    assert_eq!(digest.total_items, 3);
+    assert_eq!(digest.summary, "Family matters");
+    assert_eq!(digest.by_source, vec![("imap".to_string(), 3)]);
+}
+
+#[test]
+fn digest_items_all_noise_still_counts_items_in_stats() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .store_items(&[
+            make_item_from("1", "noreply@updates.co", "Verify your account"),
+            make_item_from("2", "marketing@store.com", "Big sale"),
+        ])
+        .unwrap();
+    let agent = MockAgent {
+        should_fail: false,
+        summary: "irrelevant".to_string(),
+    };
+
+    digest_items(&mut storage, &agent).unwrap();
+
+    let digest = storage.get_digest().unwrap().unwrap();
+    assert_eq!(digest.total_items, 2);
+    assert!(digest.summary.contains("Nothing needs attention"));
 }
