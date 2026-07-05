@@ -32,6 +32,8 @@ enum Commands {
     Config,
     /// Show stored item counts by source
     Items,
+    /// Delete all stored items
+    DeleteItems,
 }
 
 fn main() -> Result<()> {
@@ -49,6 +51,7 @@ fn main() -> Result<()> {
         Commands::Daily => cmd_daily(&storage),
         Commands::Config => cmd_config(&mut storage),
         Commands::Items => cmd_items(&storage),
+        Commands::DeleteItems => cmd_delete_items(&mut storage),
     }
 }
 
@@ -62,8 +65,9 @@ fn print_help() {
     println!("  digest   Digest fetched data into a brief");
     println!("  daily    Show the daily brief");
     println!("  config   Configure br1ef preferences");
-    println!("  items    Show stored item counts by source");
-    println!("  help     Show this usage guide");
+    println!("  items        Show stored item counts by source");
+    println!("  delete-items  Delete all stored items");
+    println!("  help         Show this usage guide");
     println!();
     println!("Setup:");
     println!("  1. Copy .env.example to .env and fill in your IMAP credentials");
@@ -151,6 +155,28 @@ fn cmd_items(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
     }
     println!("  ─────");
     println!("  Total: {}", total);
+    Ok(())
+}
+
+fn cmd_delete_items(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
+    let counts = storage.get_item_counts_by_source()?;
+    let total: usize = counts.iter().map(|(_, c)| c).sum();
+
+    if total == 0 {
+        println!("No items to delete.");
+        return Ok(());
+    }
+
+    println!("Delete {total} items? [y/N]");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+    if !input.trim().eq_ignore_ascii_case("y") {
+        println!("Cancelled.");
+        return Ok(());
+    }
+
+    let deleted = service::delete_items(storage)?;
+    println!("Deleted {deleted} items.");
     Ok(())
 }
 
