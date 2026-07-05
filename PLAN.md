@@ -91,6 +91,36 @@ IMAP_PASSWORD=your-app-password
 
 ---
 
+---
+
+## Milestone: Items count command
+
+**Goal:** Run `br1ef items` to see how many stored items exist per category (source).
+
+### Status
+
+### Steps
+
+#### 1. Add `get_item_counts_by_source` to `Storage` trait
+- Signature: `fn get_item_counts_by_source(&self) -> anyhow::Result<Vec<(String, usize)>>`
+- `SqliteStorage`: `SELECT source, COUNT(*) FROM items GROUP BY source ORDER BY source`
+- `InMemoryStorage`: group in-memory items by source into a `HashMap`
+
+**DoD:** `cargo build` passes.
+
+#### 2. Tests for counts
+- `db_test.rs`: empty table, single source, multiple sources, items inserted across multiple calls
+- `memory_test.rs`: same cases
+
+**DoD:** all tests pass via `cargo test`.
+
+#### 3. CLI `items` subcommand
+- Add `Items` variant to `Commands` enum
+- Handler calls `storage.get_item_counts_by_source()` and prints each source with count
+- Include in `print_help()`
+
+**DoD:** `cargo build` passes, `cargo clippy -- -D warnings` clean.
+
 ## Out of scope for v0.1
 
 - OAuth (app passwords / regular IMAP password is fine)
