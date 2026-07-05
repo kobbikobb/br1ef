@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::collections::HashSet;
 
 use crate::Item;
@@ -21,7 +21,20 @@ pub struct FetchResult {
 pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<FetchResult> {
     let mailboxes = storage.get_selected_mailboxes()?;
     let mailboxes = if mailboxes.is_empty() {
-        vec!["INBOX".to_string()]
+        match fetcher.list_mailboxes() {
+            Ok(all) => {
+                let mut mailboxes: Vec<String> = all
+                    .into_iter()
+                    .filter(|m| m.starts_with(crate::fetcher::GMAIL_CATEGORY_PREFIX))
+                    .collect();
+                mailboxes.insert(0, "INBOX".into());
+                mailboxes
+            }
+            Err(e) => {
+                eprintln!("warn: failed to list mailboxes for auto-detection: {e:#}");
+                vec!["INBOX".to_string()]
+            }
+        }
     } else {
         mailboxes
     };
@@ -31,9 +44,13 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<F
     let mut per_mailbox = Vec::with_capacity(mailboxes.len());
 
     for mailbox in &mailboxes {
-        let items = fetcher
-            .fetch_mailbox(mailbox)
-            .with_context(|| format!("failed to fetch from \"{mailbox}\""))?;
+        let items = match fetcher.fetch_mailbox(mailbox) {
+            Ok(items) => items,
+            Err(e) => {
+                eprintln!("warn: skipping \"{mailbox}\": {e:#}");
+                continue;
+            }
+        };
 
         let mailbox_items: Vec<Item> = items
             .into_iter()
