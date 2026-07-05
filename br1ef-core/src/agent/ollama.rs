@@ -22,7 +22,7 @@ impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
         let prompt = build_prompt(items);
 
-        crate::progress::with_progress(&prompt, || {
+        crate::progress::with_progress(&format!("Digesting {} emails...", items.len()), || {
             #[derive(Deserialize)]
             struct GenerateResponse {
                 response: String,
