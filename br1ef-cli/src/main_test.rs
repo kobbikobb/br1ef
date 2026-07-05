@@ -104,8 +104,14 @@ fn count_items_gmail_category_strips_prefix() {
 
     let output = run(|w| cmd_count_items(&storage, w));
 
-    assert!(output.contains("Social — 1"), "prefix should be stripped: {output:?}");
-    assert!(!output.contains("@@CATEGORY@@"), "prefix should not appear: {output:?}");
+    assert!(
+        output.contains("Social — 1"),
+        "prefix should be stripped: {output:?}"
+    );
+    assert!(
+        !output.contains("@@CATEGORY@@"),
+        "prefix should not appear: {output:?}"
+    );
 }
 
 #[test]
