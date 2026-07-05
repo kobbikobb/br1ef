@@ -79,17 +79,19 @@ fn display_mailbox(name: &str) -> &str {
 fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     dotenvy::dotenv().ok();
     let fetcher = ImapFetcher::from_env()?;
+
+    println!("📬 Fetching mailboxes…");
     let result = service::fetch_items(storage, &fetcher)?;
 
     for stats in &result.per_mailbox {
         println!(
-            "  {}: {} / {} new",
+            "  ✅ {} — {} new ({} total)",
             display_mailbox(&stats.name),
             stats.new,
             stats.total,
         );
     }
-    println!("Fetched {} item(s).", result.items.len());
+    println!("✨ Fetched {} item(s).", result.items.len());
     Ok(())
 }
 
@@ -109,11 +111,11 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
             println!("No digest. Run `br1ef fetch` then `br1ef digest` first.");
         }
         Some(d) => {
-            println!("Digest for {}", d.generated_at.format("%B %-e, %Y"));
+            println!("☕ Your Brief — {}", d.generated_at.format("%B %-e, %Y"));
             println!("{}", "═".repeat(40));
-            println!("Total items: {}", d.total_items);
+            println!("📦 Total items: {}", d.total_items);
             println!();
-            println!("By source:");
+            println!("📬 By source:");
             for (source, count) in &d.by_source {
                 println!("  {source}: {count}");
             }
