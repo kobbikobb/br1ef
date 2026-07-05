@@ -1,6 +1,6 @@
 use crate::Item;
 
-use super::{build_prompt, is_noise, truncate};
+use super::{build_prompt, filter_relevant, is_noise, truncate};
 
 fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
     Item {
@@ -133,4 +133,70 @@ fn is_noise_clean_email_not_noise() {
 fn is_noise_case_insensitive() {
     let item = make_item("1", "nOtIfIcAtIoNs@LiNkEdIn.CoM", "Hello", "body");
     assert!(is_noise(&item));
+}
+
+#[test]
+fn is_noise_marketing_team() {
+    let item = make_item("1", "marketing-team@company.com", "Summer Sale", "body");
+    assert!(is_noise(&item));
+}
+
+#[test]
+fn is_noise_no_reply() {
+    let item = make_item("1", "no-reply@service.com", "Your receipt", "body");
+    assert!(is_noise(&item));
+}
+
+#[test]
+fn is_noise_noreply() {
+    let item = make_item("1", "noreply@updates.co", "Please verify", "body");
+    assert!(is_noise(&item));
+}
+
+#[test]
+fn filter_relevant_keeps_clean_items() {
+    let items = vec![
+        make_item("1", "mom@family.com", "Dinner?", "Tonight?"),
+        make_item("2", "dad@family.com", "Call me", "Please"),
+    ];
+    let relevant = filter_relevant(&items);
+    assert_eq!(relevant.len(), 2);
+}
+
+#[test]
+fn filter_relevant_removes_all_noise() {
+    let items = vec![
+        make_item("1", "notifications@linkedin.com", "New message", "body"),
+        make_item("2", "marketing@store.com", "Big sale!", "body"),
+        make_item("3", "newsletter@substack.com", "Weekly Issue #5", "body"),
+    ];
+    let relevant = filter_relevant(&items);
+    assert!(relevant.is_empty());
+}
+
+#[test]
+fn filter_relevant_mixed_noise_and_clean() {
+    let items = vec![
+        make_item("1", "mom@family.com", "Dinner?", "Tonight?"),
+        make_item("2", "notifications@linkedin.com", "Connection request", "body"),
+        make_item("3", "dad@family.com", "Call me", "Please"),
+    ];
+    let relevant = filter_relevant(&items);
+    assert_eq!(relevant.len(), 2);
+    assert!(relevant.iter().any(|i| i.from == "mom@family.com"));
+    assert!(relevant.iter().any(|i| i.from == "dad@family.com"));
+}
+
+#[test]
+fn filter_relevant_empty_input() {
+    let relevant = filter_relevant(&[]);
+    assert!(relevant.is_empty());
+}
+
+#[test]
+fn build_prompt_contains_hallucination_guardrail() {
+    let item = make_item("1", "a@a.com", "Test", "Body");
+    let prompt = build_prompt(&[item]);
+    assert!(prompt.contains("Only use the information from these emails"));
+    assert!(prompt.contains("do not add anything"));
 }

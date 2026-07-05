@@ -18,9 +18,13 @@ impl OllamaAgent {
     }
 }
 
+fn filter_relevant(items: &[Item]) -> Vec<&Item> {
+    items.iter().filter(|i| !is_noise(i)).collect()
+}
+
 impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
-        let relevant: Vec<&Item> = items.iter().filter(|i| !is_noise(i)).collect();
+        let relevant = filter_relevant(items);
 
         if relevant.is_empty() {
             return Ok("Nothing needs attention today.".to_string());
@@ -59,7 +63,9 @@ fn is_noise(item: &Item) -> bool {
     from_lower.contains("linkedin.com")
         || title_lower.contains("newsletter")
         || from_lower.contains("newsletter@")
-        || from_lower.contains("marketing@")
+        || from_lower.contains("marketing")
+        || from_lower.contains("no-reply")
+        || from_lower.contains("noreply")
 }
 
 fn build_prompt(items: &[Item]) -> String {
@@ -81,6 +87,8 @@ fn build_prompt(items: &[Item]) -> String {
     format!(
         "Today is {today}. Below are emails from the last week.\n\n\
          {email_list}\
+         Only use the information from these emails — do not add anything\n\
+         not present in the emails above.\n\n\
          List personal messages and action items concisely. Skip commercial\n\
          emails, newsletters, and LinkedIn notifications. No section headers\n\
          or categories. Under 150 words.",
