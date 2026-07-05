@@ -146,17 +146,26 @@ fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
 }
 
 fn cmd_count_items(storage: &dyn br1ef_core::storage::Storage, w: &mut impl Write) -> Result<()> {
-    let counts = storage.get_item_counts_by_source()?;
+    let counts = storage.get_item_counts_by_mailbox()?;
 
     if counts.is_empty() {
         writeln!(w, "No items stored. Run `br1ef fetch` first.")?;
         return Ok(());
     }
 
-    let total: usize = counts.iter().map(|(_, c)| c).sum();
+    let total: usize = counts.iter().map(|(_, _, c)| c).sum();
     writeln!(w, "📦 Items by source:")?;
-    for (source, count) in &counts {
-        writeln!(w, "  {} — {}", source, count)?;
+    let mut current_source = String::new();
+    for (source, mailbox, count) in &counts {
+        if *source != current_source {
+            writeln!(w, "  {source}:")?;
+            current_source = source.clone();
+        }
+        if mailbox.is_empty() {
+            writeln!(w, "    (unknown) — {count}")?;
+        } else {
+            writeln!(w, "    {} — {count}", display_mailbox(mailbox))?;
+        }
     }
     writeln!(w, "  ─────")?;
     writeln!(w, "  Total: {}", total)?;

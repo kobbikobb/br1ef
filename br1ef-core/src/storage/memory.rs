@@ -76,6 +76,21 @@ impl Storage for InMemoryStorage {
         Ok(result)
     }
 
+    fn get_item_counts_by_mailbox(&self) -> Result<Vec<(String, String, usize)>> {
+        let mut counts: std::collections::HashMap<(String, String), usize> =
+            std::collections::HashMap::new();
+        for item in &self.items {
+            let key = (item.source.clone(), item.mailbox.clone());
+            *counts.entry(key).or_default() += 1;
+        }
+        let mut result: Vec<_> = counts
+            .into_iter()
+            .map(|((source, mailbox), count)| (source, mailbox, count))
+            .collect();
+        result.sort_by(|a, b| a.0.cmp(&b.0).then(a.1.cmp(&b.1)));
+        Ok(result)
+    }
+
     fn get_digest(&self) -> Result<Option<Digest>> {
         Ok(self.digest.clone())
     }
