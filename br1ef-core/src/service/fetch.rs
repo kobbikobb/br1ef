@@ -35,8 +35,16 @@ pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<F
             .fetch_mailbox(mailbox)
             .with_context(|| format!("failed to fetch from \"{mailbox}\""))?;
 
-        let total = items.len();
-        let new_count = items
+        let mailbox_items: Vec<Item> = items
+            .into_iter()
+            .map(|mut item| {
+                item.mailbox = mailbox.clone();
+                item
+            })
+            .collect();
+
+        let total = mailbox_items.len();
+        let new_count = mailbox_items
             .into_iter()
             .filter(|item| seen_ids.insert(item.id.clone()))
             .inspect(|item| all_items.push(item.clone()))

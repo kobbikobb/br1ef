@@ -9,6 +9,7 @@ fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
         title: title.to_string(),
         body: body.to_string(),
         source: "imap".to_string(),
+        mailbox: "".into(),
         urgent: false,
     }
 }

@@ -128,6 +128,7 @@ pub fn fetch_imap(
             from,
             body: body_text,
             source: "imap".into(),
+            mailbox: mailbox.to_string(),
             urgent: false,
         });
     }

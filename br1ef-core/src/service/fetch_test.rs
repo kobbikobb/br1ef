@@ -25,6 +25,7 @@ fn item(id: &str, title: &str) -> Item {
         from: "alice@example.com".into(),
         body: "body".into(),
         source: "imap".into(),
+        mailbox: "".into(),
         urgent: false,
     }
 }
@@ -39,6 +40,7 @@ fn fetch_items_defaults_to_inbox_when_no_mailboxes_configured() {
             from: "alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         }],
         vec![],
@@ -65,6 +67,7 @@ fn fetch_items_deduplicates_across_mailboxes() {
             from: "boss@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         }],
         vec![],
@@ -112,6 +115,7 @@ fn fetch_items_stores_to_storage() {
             from: "alice@example.com".into(),
             body: "body".into(),
             source: "imap".into(),
+            mailbox: "".into(),
             urgent: false,
         }],
         vec![],
@@ -291,4 +295,57 @@ fn fetch_items_deduplicates_category_with_inbox() {
     assert_eq!(result.per_mailbox.len(), 2);
     assert_eq!(result.per_mailbox[0].new, 1);
     assert_eq!(result.per_mailbox[1].new, 0);
+}
+
+#[test]
+fn fetch_items_stamps_mailbox_on_each_item() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .set_selected_mailboxes(&["INBOX".into(), "Work".into()])
+        .unwrap();
+
+    let fetcher = MailboxMapFetcher(HashMap::from([
+        (
+            "INBOX".into(),
+            vec![item("1", "Inbox Mail"), item("2", "Inbox Note")],
+        ),
+        ("Work".into(), vec![item("3", "Work Report")]),
+    ]));
+
+    let result = fetch_items(&mut storage, &fetcher).unwrap();
+
+    for item in &result.items {
+        match item.id.as_str() {
+            "1" | "2" => assert_eq!(item.mailbox, "INBOX"),
+            "3" => assert_eq!(item.mailbox, "Work"),
+            _ => panic!("unexpected item id"),
+        }
+    }
+
+    let stored = storage.get_items().unwrap();
+    for item in &stored {
+        match item.id.as_str() {
+            "1" | "2" => assert_eq!(item.mailbox, "INBOX"),
+            "3" => assert_eq!(item.mailbox, "Work"),
+            _ => panic!("unexpected stored item id"),
+        }
+    }
+}
+
+#[test]
+fn fetch_items_keeps_first_seen_mailbox_on_dedup() {
+    let mut storage = InMemoryStorage::new();
+    storage
+        .set_selected_mailboxes(&["INBOX".into(), "Work".into()])
+        .unwrap();
+
+    let fetcher = MailboxMapFetcher(HashMap::from([
+        ("INBOX".into(), vec![item("1", "Shared")]),
+        ("Work".into(), vec![item("1", "Shared")]),
+    ]));
+
+    let result = fetch_items(&mut storage, &fetcher).unwrap();
+
+    assert_eq!(result.items.len(), 1);
+    assert_eq!(result.items[0].mailbox, "INBOX");
 }
