@@ -1,5 +1,7 @@
 mod imap;
 
+pub use imap::GMAIL_CATEGORY_PREFIX;
+
 use anyhow::{Context, Result};
 
 use crate::Item;

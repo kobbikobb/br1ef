@@ -59,6 +59,12 @@ pub fn configure(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<()>
                 selected.push(name.clone());
             }
         }
+    } else {
+        for name in &all {
+            if name.starts_with(CATEGORY_PREFIX) && !selected.contains(name) {
+                selected.push(name.clone());
+            }
+        }
     }
 
     storage.set_selected_mailboxes(&selected)?;

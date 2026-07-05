@@ -5,7 +5,10 @@ use native_tls::TlsConnector;
 
 use crate::Item;
 
-const GMAIL_CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
+pub const GMAIL_CATEGORY_PREFIX: &str = "@@CATEGORY@@/";
+
+/// Bare `[Gmail]` is a namespace, not a selectable mailbox.
+const GMAIL_NAMESPACE: &str = "[Gmail]";
 
 static GMAIL_CATEGORIES: &[&str] = &["Social", "Updates", "Promotions", "Forums"];
 
@@ -33,9 +36,11 @@ pub fn list_mailboxes(
 
     let mut names: Vec<String> = mailboxes.iter().map(|m| m.name().to_string()).collect();
 
+    names.retain(|n| n != GMAIL_NAMESPACE);
+
     session.logout()?;
 
-    if names.iter().any(|n| n.starts_with("[Gmail]")) {
+    if names.iter().any(|n| n.starts_with(GMAIL_NAMESPACE)) {
         for cat in GMAIL_CATEGORIES {
             names.push(format!("{GMAIL_CATEGORY_PREFIX}{cat}"));
         }

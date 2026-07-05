@@ -21,7 +21,17 @@ pub struct FetchResult {
 pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<FetchResult> {
     let mailboxes = storage.get_selected_mailboxes()?;
     let mailboxes = if mailboxes.is_empty() {
-        vec!["INBOX".to_string()]
+        match fetcher.list_mailboxes() {
+            Ok(all) => {
+                let mut mailboxes: Vec<String> = all
+                    .into_iter()
+                    .filter(|m| m.starts_with(crate::fetcher::GMAIL_CATEGORY_PREFIX))
+                    .collect();
+                mailboxes.insert(0, "INBOX".into());
+                mailboxes
+            }
+            Err(_) => vec!["INBOX".to_string()],
+        }
     } else {
         mailboxes
     };

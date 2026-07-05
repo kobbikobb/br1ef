@@ -55,6 +55,62 @@ fn fetch_items_defaults_to_inbox_when_no_mailboxes_configured() {
 }
 
 #[test]
+fn fetch_items_auto_selects_categories_when_no_mailboxes_configured() {
+    let mut storage = InMemoryStorage::new();
+    let fetcher = MailboxMapFetcher(HashMap::from([
+        (
+            "INBOX".into(),
+            vec![item("1", "Inbox Mail")],
+        ),
+        (
+            "@@CATEGORY@@/Social".into(),
+            vec![item("2", "Social Post")],
+        ),
+        (
+            "@@CATEGORY@@/Updates".into(),
+            vec![item("3", "Update Notice")],
+        ),
+    ]));
+
+    let result = fetch_items(&mut storage, &fetcher);
+
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.items.len(), 3);
+
+    let mut mailbox_names: Vec<&str> =
+        result.per_mailbox.iter().map(|m| m.name.as_str()).collect();
+    mailbox_names.sort();
+    assert_eq!(mailbox_names, vec!["@@CATEGORY@@/Social", "@@CATEGORY@@/Updates", "INBOX"]);
+}
+
+#[test]
+fn fetch_items_falls_back_to_inbox_when_list_mailboxes_fails() {
+    use anyhow::bail;
+
+    struct BrokenListFetcher;
+
+    impl Fetcher for BrokenListFetcher {
+        fn fetch_mailbox(&self, _mailbox: &str) -> Result<Vec<Item>> {
+            Ok(vec![item("1", "Only Item")])
+        }
+        fn list_mailboxes(&self) -> Result<Vec<String>> {
+            bail!("network unavailable")
+        }
+    }
+
+    let mut storage = InMemoryStorage::new();
+
+    let result = fetch_items(&mut storage, &BrokenListFetcher);
+
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.items.len(), 1);
+    assert_eq!(result.per_mailbox.len(), 1);
+    assert_eq!(result.per_mailbox[0].name, "INBOX");
+}
+
+#[test]
 fn fetch_items_deduplicates_across_mailboxes() {
     let mut storage = InMemoryStorage::new();
     storage
