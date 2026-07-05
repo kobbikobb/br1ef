@@ -7,8 +7,8 @@ use anyhow::{Context, Result};
 mod tests;
 use rusqlite::Connection;
 
-use crate::storage::Storage;
 use crate::storage::AppConfig;
+use crate::storage::Storage;
 use crate::{Digest, Item};
 
 pub struct SqliteStorage {
@@ -293,13 +293,18 @@ impl Storage for SqliteStorage {
 
         let read = |key: &str, fallback: &str| -> String {
             conn.query_row(
-                "SELECT value FROM app_config WHERE key = ?1", [key], |row| row.get::<_, String>(0)
-            ).unwrap_or_else(|_| fallback.to_string())
+                "SELECT value FROM app_config WHERE key = ?1",
+                [key],
+                |row| row.get::<_, String>(0),
+            )
+            .unwrap_or_else(|_| fallback.to_string())
         };
 
         Ok(AppConfig {
             imap_host: read("imap_host", &default.imap_host),
-            imap_port: read("imap_port", &default.imap_port.to_string()).parse().unwrap_or(default.imap_port),
+            imap_port: read("imap_port", &default.imap_port.to_string())
+                .parse()
+                .unwrap_or(default.imap_port),
             imap_username: read("imap_username", &default.imap_username),
             imap_password: read("imap_password", &default.imap_password),
             ollama_base_url: read("ollama_base_url", &default.ollama_base_url),
@@ -313,7 +318,8 @@ impl Storage for SqliteStorage {
             conn.execute(
                 "INSERT OR REPLACE INTO app_config (key, value) VALUES (?1, ?2)",
                 [key, val],
-            ).context("failed to save app_config")?;
+            )
+            .context("failed to save app_config")?;
             Ok(())
         };
         upsert("imap_host", &cfg.imap_host)?;

@@ -29,7 +29,9 @@ impl AppConfig {
     }
 
     pub fn is_complete(&self) -> bool {
-        !self.imap_host.is_empty() && !self.imap_username.is_empty() && !self.imap_password.is_empty()
+        !self.imap_host.is_empty()
+            && !self.imap_username.is_empty()
+            && !self.imap_password.is_empty()
     }
 }
 

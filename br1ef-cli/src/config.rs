@@ -15,9 +15,11 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
     // Step 1: connection settings
     println!("Step 1/3 — Connection Settings");
 
-    cfg.imap_host = ask("IMAP server (hostname)", &cfg.imap_host).with_context(|| "Failed to read IMAP host")?;
+    cfg.imap_host = ask("IMAP server (hostname)", &cfg.imap_host)
+        .with_context(|| "Failed to read IMAP host")?;
     cfg.imap_port = ask_port(&cfg.imap_port)?;
-    cfg.imap_username = ask("IMAP username / email", &cfg.imap_username).with_context(|| "Failed to read IMAP username")?;
+    cfg.imap_username = ask("IMAP username / email", &cfg.imap_username)
+        .with_context(|| "Failed to read IMAP username")?;
 
     {
         print!("IMAP password: ");
@@ -28,8 +30,10 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
     }
 
     println!();
-    cfg.ollama_base_url = ask("Ollama base URL", &cfg.ollama_base_url).with_context(|| "Failed to read Ollama URL")?;
-    cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model).with_context(|| "Failed to read Ollama model")?;
+    cfg.ollama_base_url = ask("Ollama base URL", &cfg.ollama_base_url)
+        .with_context(|| "Failed to read Ollama URL")?;
+    cfg.ollama_model = ask("Ollama model name", &cfg.ollama_model)
+        .with_context(|| "Failed to read Ollama model")?;
 
     storage.set_app_config(&cfg)?;
 
@@ -44,7 +48,11 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
         println!("\nStep 2/3 — Mailbox Selection");
         for (i, name) in mailboxes.iter().enumerate() {
             let marker = if name == "INBOX" { " (default)" } else { "" };
-            let suffix = if name.starts_with(GMAIL_CATEGORY_PREFIX) { " (category)" } else { "" };
+            let suffix = if name.starts_with(GMAIL_CATEGORY_PREFIX) {
+                " (category)"
+            } else {
+                ""
+            };
             println!("  {:2}. {}{}{}", i + 1, display_name(name), marker, suffix);
         }
     }
@@ -87,14 +95,31 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
     // Step 3: confirmation
     println!("\nStep 3/3 — Config Complete!");
     let disp = |val: &str, default: &str| -> String {
-        if val.is_empty() || val == default { "<default>".into() } else { val.to_string() }
+        if val.is_empty() || val == default {
+            "<default>".into()
+        } else {
+            val.to_string()
+        }
     };
     println!(r#"  IMAP host:     {}"#, disp(&cfg.imap_host, ""));
-    println!("  Ollama URL:    {}", disp(&cfg.ollama_base_url, "http://localhost:11434"));
-    println!("  Ollama model:  {}", disp(&cfg.ollama_model, "llama3.2:1b"));
+    println!(
+        "  Ollama URL:    {}",
+        disp(&cfg.ollama_base_url, "http://localhost:11434")
+    );
+    println!(
+        "  Ollama model:  {}",
+        disp(&cfg.ollama_model, "llama3.2:1b")
+    );
 
     let mbx = storage.get_selected_mailboxes()?;
-    println!("  Mailboxes:     {} ({} in total)", mbx.iter().map(|m| display_name(m)).collect::<Vec<_>>().join(", "), mbx.len());
+    println!(
+        "  Mailboxes:     {} ({} in total)",
+        mbx.iter()
+            .map(|m| display_name(m))
+            .collect::<Vec<_>>()
+            .join(", "),
+        mbx.len()
+    );
 
     println!("\nRun `br1ef fetch`, then `br1ef digest` when ready.");
     Ok(())
@@ -102,7 +127,14 @@ pub fn configure(storage: &mut dyn Storage, fetcher: Option<&dyn Fetcher>) -> Re
 
 fn ask(prompt: &str, current: &str) -> Result<String> {
     let mut input = String::new();
-    print!("{prompt} (current: {}) : ", if current.is_empty() { "(none)" } else { current });
+    print!(
+        "{prompt} (current: {}) : ",
+        if current.is_empty() {
+            "(none)"
+        } else {
+            current
+        }
+    );
     std::io::stdin().read_line(&mut input)?;
     Ok(input.trim().to_string())
 }

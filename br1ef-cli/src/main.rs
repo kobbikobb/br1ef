@@ -60,8 +60,10 @@ fn main() -> Result<()> {
 
 fn load_config(storage: &dyn br1ef_core::storage::Storage) -> Result<AppConfig> {
     let cfg = storage.get_app_config()?;
-    anyhow::ensure!(cfg.is_complete(),
-        "Configuration incomplete. Run `br1ef config` to set up IMAP credentials and Ollama settings.");
+    anyhow::ensure!(
+        cfg.is_complete(),
+        "Configuration incomplete. Run `br1ef config` to set up IMAP credentials and Ollama settings."
+    );
     Ok(cfg)
 }
 
@@ -98,7 +100,10 @@ fn display_mailbox(name: &str) -> &str {
 fn cmd_fetch(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     let cfg = load_config(storage)?;
     let fetcher = ImapFetcher::new(
-        &cfg.imap_host, cfg.imap_port, &cfg.imap_username, &cfg.imap_password,
+        &cfg.imap_host,
+        cfg.imap_port,
+        &cfg.imap_username,
+        &cfg.imap_password,
     );
 
     println!("📬 Fetching mailboxes…");
@@ -231,12 +236,22 @@ fn cmd_delete_items(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()
 fn cmd_config(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
     let fetcher = storage.get_app_config().ok().and_then(|cfg| {
         if cfg.is_complete() {
-            Some(ImapFetcher::new(&cfg.imap_host, cfg.imap_port, &cfg.imap_username, &cfg.imap_password))
+            Some(ImapFetcher::new(
+                &cfg.imap_host,
+                cfg.imap_port,
+                &cfg.imap_username,
+                &cfg.imap_password,
+            ))
         } else {
             None
         }
     });
-    config::configure(storage, fetcher.as_ref().map(|f| f as &dyn br1ef_core::fetcher::Fetcher))?;
+    config::configure(
+        storage,
+        fetcher
+            .as_ref()
+            .map(|f| f as &dyn br1ef_core::fetcher::Fetcher),
+    )?;
     Ok(())
 }
 
