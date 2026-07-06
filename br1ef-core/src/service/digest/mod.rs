@@ -3,9 +3,11 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::Utc;
 
+mod dedup;
+mod noise;
+
+use self::dedup::dedup_threads;
 use crate::agent::Agent;
-use crate::service::dedup::dedup_threads;
-use crate::service::noise;
 use crate::storage::Storage;
 
 pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> {
