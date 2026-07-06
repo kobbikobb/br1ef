@@ -122,7 +122,7 @@ fn cmd_digest(storage: &mut dyn br1ef_core::storage::Storage) -> Result<()> {
 }
 
 fn cmd_daily(storage: &dyn br1ef_core::storage::Storage) -> Result<()> {
-    let digest = service::get_daily_items(storage)?;
+    let digest = storage.get_digest()?;
 
     match digest {
         None => {
