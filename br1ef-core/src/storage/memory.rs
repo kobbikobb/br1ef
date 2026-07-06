@@ -4,7 +4,7 @@ use anyhow::Result;
 #[path = "memory_test.rs"]
 mod tests;
 
-use crate::AppConfig;
+use crate::config::AppConfig;
 use crate::storage::Storage;
 use crate::{Digest, Item};
 

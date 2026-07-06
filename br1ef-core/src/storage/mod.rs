@@ -4,7 +4,8 @@ mod memory;
 pub use db::SqliteStorage;
 pub use memory::InMemoryStorage;
 
-use crate::{AppConfig, Digest, Item};
+use crate::config::AppConfig;
+use crate::{Digest, Item};
 
 pub trait Storage: Send + Sync {
     fn store_items(&mut self, items: &[Item]) -> anyhow::Result<()>;

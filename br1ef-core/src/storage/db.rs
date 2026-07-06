@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 mod tests;
 use rusqlite::Connection;
 
-use crate::AppConfig;
+use crate::config::AppConfig;
 use crate::storage::Storage;
 use crate::{Digest, Item};
 

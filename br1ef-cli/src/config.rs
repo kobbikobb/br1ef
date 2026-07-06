@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use anyhow::{Context, Result};
-use br1ef_core::AppConfig;
+use br1ef_core::config::AppConfig;
 use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
 use br1ef_core::storage::Storage;
 
