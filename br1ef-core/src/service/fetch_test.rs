@@ -16,6 +16,14 @@ impl Fetcher for MailboxMapFetcher {
     fn list_mailboxes(&self) -> Result<Vec<String>> {
         Ok(self.0.keys().cloned().collect())
     }
+    fn preferred_mailboxes(&self) -> Result<Vec<String>> {
+        // Simulate Gmail-style auto-detect: INBOX + category mailboxes
+        Ok(vec![
+            "INBOX".into(),
+            "@@CATEGORY@@/Social".into(),
+            "@@CATEGORY@@/Updates".into(),
+        ])
+    }
 }
 
 fn item(id: &str, title: &str) -> Item {
@@ -91,6 +99,9 @@ fn fetch_items_falls_back_to_inbox_when_list_mailboxes_fails() {
             Ok(vec![item("1", "Only Item")])
         }
         fn list_mailboxes(&self) -> Result<Vec<String>> {
+            Ok(vec!["INBOX".into()])
+        }
+        fn preferred_mailboxes(&self) -> Result<Vec<String>> {
             bail!("network unavailable")
         }
     }
