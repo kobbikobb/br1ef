@@ -3,18 +3,19 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::Utc;
 
-mod dedup;
-mod noise;
-
 use self::dedup::dedup_threads;
+use self::noise::filter_relevant;
 use crate::agent::Agent;
 use crate::storage::Storage;
 
 use crate::{Digest, Item};
 
+mod dedup;
+mod noise;
+
 pub fn build_digest(items: Vec<Item>, agent: &dyn Agent) -> Result<Digest> {
     let items = dedup_threads(items);
-    let relevant = noise::filter_relevant(&items);
+    let relevant = filter_relevant(&items);
 
     let summary = if items.is_empty() {
         "No items to summarize.".to_string()
@@ -41,10 +42,8 @@ pub fn build_digest(items: Vec<Item>, agent: &dyn Agent) -> Result<Digest> {
 }
 
 pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> {
-    let raw_items = storage.get_items()?;
-    let items = dedup_threads(raw_items);
-    let relevant = noise::filter_relevant(&items);
-
+    let items = storage.get_items()?;
+    let relevant = filter_relevant(&items);
     let has_content = !items.is_empty() && !relevant.is_empty();
 
     if has_content {
