@@ -25,4 +25,3 @@ pub struct Digest {
     pub summary: String,
     pub generated_at: chrono::DateTime<chrono::Utc>,
 }
-
