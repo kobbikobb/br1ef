@@ -10,8 +10,7 @@ use self::dedup::dedup_threads;
 use crate::agent::Agent;
 use crate::storage::Storage;
 
-pub fn build_digest(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<crate::Digest> {
-    let items = storage.get_items()?;
+pub fn build_digest(items: Vec<crate::Item>, agent: &dyn Agent) -> Result<crate::Digest> {
     let items = dedup_threads(items);
     let relevant = noise::filter_relevant(&items);
 
@@ -40,11 +39,13 @@ pub fn build_digest(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<crat
 }
 
 pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> {
-    let items = storage.get_items()?;
-    let items = dedup_threads(items);
+    let raw_items = storage.get_items()?;
+    let items = dedup_threads(raw_items);
     let relevant = noise::filter_relevant(&items);
 
-    if !items.is_empty() && !relevant.is_empty() {
+    let has_content = !items.is_empty() && !relevant.is_empty();
+
+    if has_content {
         let bytes: usize = relevant.iter().map(|i| i.body.len()).sum();
         let words: usize = relevant
             .iter()
@@ -62,11 +63,11 @@ pub fn digest_items(storage: &mut dyn Storage, agent: &dyn Agent) -> Result<()> 
     }
 
     let start = std::time::Instant::now();
-    let digest = build_digest(storage, agent)?;
+    let digest = build_digest(items, agent)?;
     let elapsed = start.elapsed();
     storage.store_digest(&digest)?;
 
-    if !items.is_empty() && !relevant.is_empty() {
+    if has_content {
         eprintln!("  ✨ Digest ready — {:.1}s.", elapsed.as_secs_f64());
     }
 
