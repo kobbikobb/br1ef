@@ -7,8 +7,8 @@ use anyhow::{Context, Result};
 mod tests;
 use rusqlite::Connection;
 
-use crate::AppConfig;
 use crate::storage::Storage;
+use crate::AppConfig;
 use crate::{Digest, Item};
 
 pub struct SqliteStorage {
