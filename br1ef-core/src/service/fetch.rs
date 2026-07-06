@@ -21,17 +21,10 @@ pub struct FetchResult {
 pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<FetchResult> {
     let mailboxes = storage.get_selected_mailboxes()?;
     let mailboxes = if mailboxes.is_empty() {
-        match fetcher.list_mailboxes() {
-            Ok(all) => {
-                let mut mailboxes: Vec<String> = all
-                    .into_iter()
-                    .filter(|m| m.starts_with(crate::fetcher::GMAIL_CATEGORY_PREFIX))
-                    .collect();
-                mailboxes.insert(0, "INBOX".into());
-                mailboxes
-            }
+        match fetcher.suggested_mailboxes() {
+            Ok(mb) => mb,
             Err(e) => {
-                eprintln!("warn: failed to list mailboxes for auto-detection: {e:#}");
+                eprintln!("warn: failed to auto-detect mailboxes: {e:#}");
                 vec!["INBOX".to_string()]
             }
         }

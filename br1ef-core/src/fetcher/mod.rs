@@ -9,6 +9,10 @@ use crate::Item;
 pub trait Fetcher {
     fn fetch_mailbox(&self, mailbox: &str) -> Result<Vec<Item>>;
     fn list_mailboxes(&self) -> Result<Vec<String>>;
+
+    fn suggested_mailboxes(&self) -> Result<Vec<String>> {
+        Ok(vec!["INBOX".to_string()])
+    }
 }
 
 pub struct ImapFetcher {
@@ -43,6 +47,16 @@ impl Fetcher for ImapFetcher {
     fn list_mailboxes(&self) -> Result<Vec<String>> {
         imap::list_mailboxes(&self.host, self.port, &self.username, &self.password)
     }
+
+    fn suggested_mailboxes(&self) -> Result<Vec<String>> {
+        let all = self.list_mailboxes()?;
+        let mut mailboxes: Vec<String> = all
+            .into_iter()
+            .filter(|m| m.starts_with(imap::GMAIL_CATEGORY_PREFIX))
+            .collect();
+        mailboxes.insert(0, "INBOX".into());
+        Ok(mailboxes)
+    }
 }
 
 #[cfg(test)]
@@ -67,6 +81,14 @@ pub mod mock {
 
         fn list_mailboxes(&self) -> Result<Vec<String>> {
             Ok(self.mailboxes.clone())
+        }
+
+        fn suggested_mailboxes(&self) -> Result<Vec<String>> {
+            if self.mailboxes.is_empty() {
+                Ok(vec!["INBOX".to_string()])
+            } else {
+                Ok(self.mailboxes.clone())
+            }
         }
     }
 }
