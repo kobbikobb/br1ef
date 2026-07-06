@@ -10,7 +10,9 @@ use self::dedup::dedup_threads;
 use crate::agent::Agent;
 use crate::storage::Storage;
 
-pub fn build_digest(items: Vec<crate::Item>, agent: &dyn Agent) -> Result<crate::Digest> {
+use crate::{Digest, Item};
+
+pub fn build_digest(items: Vec<Item>, agent: &dyn Agent) -> Result<Digest> {
     let items = dedup_threads(items);
     let relevant = noise::filter_relevant(&items);
 
@@ -30,7 +32,7 @@ pub fn build_digest(items: Vec<crate::Item>, agent: &dyn Agent) -> Result<crate:
     let mut by_source_vec: Vec<_> = by_source.into_iter().collect();
     by_source_vec.sort_by_key(|(_, count)| std::cmp::Reverse(*count));
 
-    Ok(crate::Digest {
+    Ok(Digest {
         total_items: items.len(),
         by_source: by_source_vec,
         summary,
