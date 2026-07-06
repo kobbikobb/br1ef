@@ -10,7 +10,7 @@ pub trait Fetcher {
     fn fetch_mailbox(&self, mailbox: &str) -> Result<Vec<Item>>;
     fn list_mailboxes(&self) -> Result<Vec<String>>;
 
-    fn preferred_mailboxes(&self) -> Result<Vec<String>> {
+    fn suggested_mailboxes(&self) -> Result<Vec<String>> {
         Ok(vec!["INBOX".to_string()])
     }
 }
@@ -48,7 +48,7 @@ impl Fetcher for ImapFetcher {
         imap::list_mailboxes(&self.host, self.port, &self.username, &self.password)
     }
 
-    fn preferred_mailboxes(&self) -> Result<Vec<String>> {
+    fn suggested_mailboxes(&self) -> Result<Vec<String>> {
         let all = self.list_mailboxes()?;
         let mut mailboxes: Vec<String> = all
             .into_iter()
@@ -83,7 +83,7 @@ pub mod mock {
             Ok(self.mailboxes.clone())
         }
 
-        fn preferred_mailboxes(&self) -> Result<Vec<String>> {
+        fn suggested_mailboxes(&self) -> Result<Vec<String>> {
             if self.mailboxes.is_empty() {
                 Ok(vec!["INBOX".to_string()])
             } else {

@@ -21,7 +21,7 @@ pub struct FetchResult {
 pub fn fetch_items(storage: &mut dyn Storage, fetcher: &dyn Fetcher) -> Result<FetchResult> {
     let mailboxes = storage.get_selected_mailboxes()?;
     let mailboxes = if mailboxes.is_empty() {
-        match fetcher.preferred_mailboxes() {
+        match fetcher.suggested_mailboxes() {
             Ok(mb) => mb,
             Err(e) => {
                 eprintln!("warn: failed to auto-detect mailboxes: {e:#}");
