@@ -1,7 +1,7 @@
 use super::*;
+use br1ef_core::AppConfig;
 use br1ef_core::Item;
 use br1ef_core::storage::{InMemoryStorage, Storage};
-use br1ef_core::AppConfig;
 
 fn storage_with(items: &[(&str, &str, &str, &str)]) -> InMemoryStorage {
     let mut s = InMemoryStorage::new();
