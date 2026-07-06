@@ -26,8 +26,3 @@ pub struct Digest {
     pub generated_at: chrono::DateTime<chrono::Utc>,
 }
 
-/// A source of digest items.
-pub trait Source {
-    fn id(&self) -> &str;
-    fn fetch(&self) -> anyhow::Result<Vec<Item>>;
-}
