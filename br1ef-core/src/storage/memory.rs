@@ -4,7 +4,8 @@ use anyhow::Result;
 #[path = "memory_test.rs"]
 mod tests;
 
-use crate::storage::{AppConfig, Storage};
+use crate::storage::Storage;
+use crate::AppConfig;
 use crate::{Digest, Item};
 
 pub struct InMemoryStorage {

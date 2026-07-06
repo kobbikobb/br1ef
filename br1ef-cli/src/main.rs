@@ -4,7 +4,8 @@ use anyhow::Result;
 use br1ef_core::agent::OllamaAgent;
 use br1ef_core::fetcher::ImapFetcher;
 use br1ef_core::service;
-use br1ef_core::storage::{AppConfig, SqliteStorage};
+use br1ef_core::storage::SqliteStorage;
+use br1ef_core::AppConfig;
 use clap::{Parser, Subcommand};
 use std::io::Write;
 
