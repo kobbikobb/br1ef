@@ -1,8 +1,9 @@
 use std::io::Write;
 
 use anyhow::{Context, Result};
+use br1ef_core::AppConfig;
 use br1ef_core::fetcher::{Fetcher, GMAIL_CATEGORY_PREFIX};
-use br1ef_core::storage::{AppConfig, Storage};
+use br1ef_core::storage::Storage;
 
 pub fn display_name(raw: &str) -> &str {
     if let Some(cat) = raw.strip_prefix(GMAIL_CATEGORY_PREFIX) {

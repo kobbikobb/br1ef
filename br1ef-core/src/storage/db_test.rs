@@ -1,6 +1,7 @@
 use super::SqliteStorage;
+use crate::AppConfig;
 use crate::Item;
-use crate::storage::{AppConfig, Storage};
+use crate::storage::Storage;
 
 fn make_item(id: &str) -> Item {
     make_item_with_source(id, "s")
