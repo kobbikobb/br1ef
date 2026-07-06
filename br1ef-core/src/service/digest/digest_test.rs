@@ -5,7 +5,7 @@ use crate::agent::Agent;
 use crate::storage::InMemoryStorage;
 use crate::storage::Storage;
 
-use super::digest_items;
+use super::{build_digest, digest_items};
 
 struct MockAgent {
     should_fail: bool,
@@ -239,4 +239,79 @@ fn digest_items_all_noise_still_counts_items_in_stats() {
     let digest = storage.get_digest().unwrap().unwrap();
     assert_eq!(digest.total_items, 2);
     assert!(digest.summary.contains("Nothing needs attention"));
+}
+
+#[test]
+fn build_digest_empty_items() {
+    let agent = MockAgent {
+        should_fail: false,
+        summary: String::new(),
+    };
+
+    let digest = build_digest(vec![], &agent).unwrap();
+
+    assert_eq!(digest.total_items, 0);
+    assert!(digest.by_source.is_empty());
+    assert_eq!(digest.summary, "No items to summarize.");
+}
+
+#[test]
+fn build_digest_all_noise() {
+    let agent = MockAgent {
+        should_fail: false,
+        summary: String::new(),
+    };
+    let items = vec![
+        make_item_from("1", "notifications@linkedin.com", "New message"),
+        make_item_from("2", "newsletter@substack.com", "Weekly Issue"),
+    ];
+
+    let digest = build_digest(items, &agent).unwrap();
+
+    assert_eq!(digest.total_items, 2);
+    assert_eq!(digest.summary, "Nothing needs attention today.");
+}
+
+#[test]
+fn build_digest_aggregates_by_source() {
+    let agent = MockAgent {
+        should_fail: false,
+        summary: "summary".to_string(),
+    };
+    let items = vec![
+        Item {
+            id: "1".into(),
+            title: "Work".into(),
+            from: "boss@example.com".into(),
+            body: "body".into(),
+            source: "imap".into(),
+            mailbox: "".into(),
+            urgent: false,
+        },
+        Item {
+            id: "2".into(),
+            title: "PR".into(),
+            from: "github@example.com".into(),
+            body: "body".into(),
+            source: "imap".into(),
+            mailbox: "".into(),
+            urgent: false,
+        },
+        Item {
+            id: "3".into(),
+            title: "Channel".into(),
+            from: "slack@example.com".into(),
+            body: "body".into(),
+            source: "slack".into(),
+            mailbox: "".into(),
+            urgent: false,
+        },
+    ];
+
+    let digest = build_digest(items, &agent).unwrap();
+
+    assert_eq!(digest.total_items, 3);
+    assert_eq!(digest.by_source.len(), 2);
+    assert!(digest.by_source.contains(&("imap".to_string(), 2)));
+    assert!(digest.by_source.contains(&("slack".to_string(), 1)));
 }
