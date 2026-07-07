@@ -1,4 +1,5 @@
 use crate::Item;
+use crate::Source;
 
 use super::{build_prompt, parse_list_response, truncate};
 
@@ -8,7 +9,7 @@ fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
         from: from.to_string(),
         title: title.to_string(),
         body: body.to_string(),
-        source: "imap".to_string(),
+        source: Source::Imap,
         mailbox: "".into(),
         urgent: false,
     }

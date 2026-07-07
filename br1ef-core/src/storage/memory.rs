@@ -6,7 +6,7 @@ mod tests;
 
 use crate::config::AppConfig;
 use crate::storage::Storage;
-use crate::{Digest, Item};
+use crate::{Digest, Item, Source};
 
 pub struct InMemoryStorage {
     items: Vec<Item>,
@@ -70,11 +70,14 @@ impl Storage for InMemoryStorage {
     }
 
     fn get_item_counts_by_source(&self) -> Result<Vec<(String, usize)>> {
-        let mut counts: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut counts: std::collections::HashMap<Source, usize> = std::collections::HashMap::new();
         for item in &self.items {
             *counts.entry(item.source.clone()).or_default() += 1;
         }
-        let mut result: Vec<_> = counts.into_iter().collect();
+        let mut result: Vec<_> = counts
+            .into_iter()
+            .map(|(source, count)| (source.to_string(), count))
+            .collect();
         result.sort_by(|a, b| a.0.cmp(&b.0));
         Ok(result)
     }
@@ -83,7 +86,7 @@ impl Storage for InMemoryStorage {
         let mut counts: std::collections::HashMap<(String, String), usize> =
             std::collections::HashMap::new();
         for item in &self.items {
-            let key = (item.source.clone(), item.mailbox.clone());
+            let key = (item.source.to_string(), item.mailbox.clone());
             *counts.entry(key).or_default() += 1;
         }
         let mut result: Vec<_> = counts

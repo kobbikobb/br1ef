@@ -1,6 +1,7 @@
 use anyhow::Result;
 
 use crate::Item;
+use crate::Source;
 use crate::agent::Agent;
 use crate::storage::InMemoryStorage;
 use crate::storage::Storage;
@@ -24,13 +25,13 @@ impl Agent for MockAgent {
     }
 }
 
-fn make_item(id: &str, source: &str, body: &str) -> Item {
+fn make_item(id: &str, source: Source, body: &str) -> Item {
     Item {
         id: id.to_string(),
         title: "test".to_string(),
         from: "alice@test.com".to_string(),
         body: body.to_string(),
-        source: source.to_string(),
+        source,
         mailbox: "".into(),
         urgent: false,
     }
@@ -42,7 +43,7 @@ fn make_item_from(id: &str, from: &str, title: &str) -> Item {
         title: title.to_string(),
         from: from.to_string(),
         body: "body".to_string(),
-        source: "imap".to_string(),
+        source: Source::Imap,
         mailbox: "".into(),
         urgent: false,
     }
@@ -54,7 +55,7 @@ fn make_noise_item(id: &str, from: &str, title: &str, body: &str) -> Item {
         from: from.to_string(),
         title: title.to_string(),
         body: body.to_string(),
-        source: "imap".to_string(),
+        source: Source::Imap,
         mailbox: "".into(),
         urgent: false,
     }
@@ -212,7 +213,7 @@ fn dedup_single_item() {
         title: "Hello".into(),
         from: "alice@example.com".into(),
         body: "body".into(),
-        source: "imap".into(),
+        source: Source::Imap,
         mailbox: "".into(),
         urgent: false,
     }];
@@ -230,7 +231,7 @@ fn dedup_collapses_thread_to_newest() {
             title: "Re: Hello".into(),
             from: "alice@example.com".into(),
             body: "old reply".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -239,7 +240,7 @@ fn dedup_collapses_thread_to_newest() {
             title: "Re: Hello".into(),
             from: "alice@example.com".into(),
             body: "newest reply".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -260,7 +261,7 @@ fn dedup_keeps_different_senders() {
             title: "Hello".into(),
             from: "alice@example.com".into(),
             body: "alice says".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -269,7 +270,7 @@ fn dedup_keeps_different_senders() {
             title: "Hello".into(),
             from: "bob@example.com".into(),
             body: "bob says".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -288,7 +289,7 @@ fn dedup_preserves_order() {
             title: "Meeting".into(),
             from: "alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -297,7 +298,7 @@ fn dedup_preserves_order() {
             title: "Lunch".into(),
             from: "alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -306,7 +307,7 @@ fn dedup_preserves_order() {
             title: "Re: Meeting".into(),
             from: "alice@example.com".into(),
             body: "reply".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -327,7 +328,7 @@ fn dedup_all_unique() {
             title: "Meeting".into(),
             from: "alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -336,7 +337,7 @@ fn dedup_all_unique() {
             title: "Lunch".into(),
             from: "bob@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -355,7 +356,7 @@ fn dedup_many_replies_only_keeps_last() {
             title: "Re: Hello".into(),
             from: "alice@example.com".into(),
             body: format!("reply {i}"),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         })
@@ -376,7 +377,7 @@ fn dedup_different_from_casing() {
             title: "Hello".into(),
             from: "Alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -385,7 +386,7 @@ fn dedup_different_from_casing() {
             title: "Hello".into(),
             from: "alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -404,7 +405,7 @@ fn dedup_preserves_input_order() {
             title: "Alpha".into(),
             from: "a@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -413,7 +414,7 @@ fn dedup_preserves_input_order() {
             title: "Beta".into(),
             from: "b@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -422,7 +423,7 @@ fn dedup_preserves_input_order() {
             title: "Gamma".into(),
             from: "c@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -610,7 +611,7 @@ fn digest_items_with_items_stores_digest_with_correct_summary() {
                 title: "Meeting".into(),
                 from: "alice@a".into(),
                 body: "hello world".into(),
-                source: "imap".into(),
+                source: Source::Imap,
                 mailbox: "".into(),
                 urgent: false,
             },
@@ -619,7 +620,7 @@ fn digest_items_with_items_stores_digest_with_correct_summary() {
                 title: "Lunch".into(),
                 from: "bob@b".into(),
                 body: "foo bar baz".into(),
-                source: "imap".into(),
+                source: Source::Imap,
                 mailbox: "".into(),
                 urgent: false,
             },
@@ -642,7 +643,7 @@ fn digest_items_with_items_stores_digest_with_correct_summary() {
 fn digest_items_agent_error_propagates() {
     let mut storage = InMemoryStorage::new();
     storage
-        .store_items(&[make_item("1", "imap", "hello")])
+        .store_items(&[make_item("1", Source::Imap, "hello")])
         .unwrap();
     let agent = MockAgent {
         should_fail: true,
@@ -666,7 +667,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 title: format!("{title}-a"),
                 from: "alice@a".into(),
                 body: "a".into(),
-                source: "imap".into(),
+                source: Source::Imap,
                 mailbox: "".into(),
                 urgent: false,
             },
@@ -675,7 +676,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 title: format!("{title}-b"),
                 from: "alice@b".into(),
                 body: "b".into(),
-                source: "slack".into(),
+                source: Source::Imap,
                 mailbox: "".into(),
                 urgent: false,
             },
@@ -684,7 +685,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 title: format!("{title}-c"),
                 from: "alice@c".into(),
                 body: "c".into(),
-                source: "imap".into(),
+                source: Source::Imap,
                 mailbox: "".into(),
                 urgent: false,
             },
@@ -693,7 +694,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
                 title: format!("{title}-d"),
                 from: "alice@d".into(),
                 body: "d".into(),
-                source: "slack".into(),
+                source: Source::Imap,
                 mailbox: "".into(),
                 urgent: false,
             },
@@ -708,9 +709,7 @@ fn digest_items_by_source_aggregates_multiple_sources() {
 
     let digest = storage.get_digest().unwrap().unwrap();
     assert_eq!(digest.total_items, 4);
-    let sources: std::collections::HashMap<_, _> = digest.by_source.into_iter().collect();
-    assert_eq!(sources.get("imap"), Some(&2));
-    assert_eq!(sources.get("slack"), Some(&2));
+    assert_eq!(digest.by_source, vec![("imap".to_string(), 4)]);
 }
 
 #[test]
@@ -822,7 +821,7 @@ fn build_digest_aggregates_by_source() {
             title: "Work".into(),
             from: "boss@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -831,7 +830,7 @@ fn build_digest_aggregates_by_source() {
             title: "PR".into(),
             from: "github@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -840,7 +839,7 @@ fn build_digest_aggregates_by_source() {
             title: "Channel".into(),
             from: "slack@example.com".into(),
             body: "body".into(),
-            source: "slack".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         },
@@ -849,7 +848,5 @@ fn build_digest_aggregates_by_source() {
     let digest = build_digest(items, &agent).unwrap();
 
     assert_eq!(digest.total_items, 3);
-    assert_eq!(digest.by_source.len(), 2);
-    assert!(digest.by_source.contains(&("imap".to_string(), 2)));
-    assert!(digest.by_source.contains(&("slack".to_string(), 1)));
+    assert_eq!(digest.by_source, vec![("imap".to_string(), 3)]);
 }

@@ -9,7 +9,7 @@ use rusqlite::Connection;
 
 use crate::config::AppConfig;
 use crate::storage::Storage;
-use crate::{Digest, Item};
+use crate::{Digest, Item, Source};
 
 pub struct SqliteStorage {
     pub(crate) conn: Mutex<Connection>,
@@ -77,7 +77,7 @@ impl Storage for SqliteStorage {
                 item.title,
                 item.from,
                 item.body,
-                item.source,
+                item.source.as_str(),
                 item.mailbox,
                 item.urgent as i32,
             ])
@@ -91,22 +91,36 @@ impl Storage for SqliteStorage {
         let mut stmt = conn
             .prepare("SELECT id, title, \"from\", body, source, mailbox, urgent FROM items")
             .context("failed to prepare select")?;
-        let items = stmt
+        let rows = stmt
             .query_map([], |row| {
-                Ok(Item {
-                    id: row.get(0)?,
-                    title: row.get(1)?,
-                    from: row.get(2)?,
-                    body: row.get(3)?,
-                    source: row.get(4)?,
-                    mailbox: row.get(5)?,
-                    urgent: row.get::<_, i32>(6)? != 0,
-                })
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, String>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, i32>(6)?,
+                ))
             })
             .context("failed to query items")?;
         let mut result = Vec::new();
-        for item in items {
-            result.push(item.context("failed to read item row")?);
+        for row in rows {
+            let (id, title, from, body, source_str, mailbox, urgent) =
+                row.context("failed to read item row")?;
+            let source = match source_str.as_str() {
+                "imap" => Source::Imap,
+                other => anyhow::bail!("unknown source: {other}"),
+            };
+            result.push(Item {
+                id,
+                title,
+                from,
+                body,
+                source,
+                mailbox,
+                urgent: urgent != 0,
+            });
         }
         Ok(result)
     }
