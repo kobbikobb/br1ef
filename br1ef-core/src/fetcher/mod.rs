@@ -1,6 +1,6 @@
 mod imap;
 
-pub use imap::GMAIL_CATEGORY_PREFIX;
+pub use crate::email::GMAIL_CATEGORY_PREFIX;
 
 use anyhow::Result;
 
@@ -52,7 +52,7 @@ impl Fetcher for ImapFetcher {
         let all = self.list_mailboxes()?;
         let mut mailboxes: Vec<String> = all
             .into_iter()
-            .filter(|m| m.starts_with(imap::GMAIL_CATEGORY_PREFIX))
+            .filter(|m| m.starts_with(GMAIL_CATEGORY_PREFIX))
             .collect();
         mailboxes.insert(0, "INBOX".into());
         Ok(mailboxes)

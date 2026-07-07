@@ -1,5 +1,6 @@
 pub mod agent;
 pub mod config;
+pub mod email;
 pub mod fetcher;
 pub mod progress;
 pub mod service;
