@@ -572,7 +572,12 @@ fn filter_relevant_empty_input() {
 
 #[test]
 fn filter_relevant_returns_cloned_owned_items() {
-    let items = vec![make_noise_item("1", "mom@family.com", "Dinner?", "Tonight?")];
+    let items = vec![make_noise_item(
+        "1",
+        "mom@family.com",
+        "Dinner?",
+        "Tonight?",
+    )];
     let relevant = filter_relevant(&items);
     assert_eq!(relevant[0].id, "1");
 }
