@@ -1,19 +1,20 @@
 use super::SqliteStorage;
 use crate::Item;
+use crate::Source;
 use crate::config::AppConfig;
 use crate::storage::Storage;
 
 fn make_item(id: &str) -> Item {
-    make_item_with_source(id, "s")
+    make_item_with_source(id, Source::Imap)
 }
 
-fn make_item_with_source(id: &str, source: &str) -> Item {
+fn make_item_with_source(id: &str, source: Source) -> Item {
     Item {
         id: id.into(),
         title: "t".into(),
         from: "f".into(),
         body: "b".into(),
-        source: source.into(),
+        source,
         mailbox: "".into(),
         urgent: false,
     }
@@ -104,78 +105,68 @@ fn counts_empty_when_no_items() {
 #[test]
 fn counts_single_source_single_item() {
     let mut s = new_store();
-    s.store_items(&[make_item_with_source("a", "inbox")])
+    s.store_items(&[make_item_with_source("a", Source::Imap)])
         .unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
-    assert_eq!(counts, vec![("inbox".to_string(), 1)]);
+    assert_eq!(counts, vec![("imap".to_string(), 1)]);
 }
 
 #[test]
 fn counts_single_source_multiple_items() {
     let mut s = new_store();
     s.store_items(&[
-        make_item_with_source("a", "inbox"),
-        make_item_with_source("b", "inbox"),
-        make_item_with_source("c", "inbox"),
+        make_item_with_source("a", Source::Imap),
+        make_item_with_source("b", Source::Imap),
+        make_item_with_source("c", Source::Imap),
     ])
     .unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
-    assert_eq!(counts, vec![("inbox".to_string(), 3)]);
+    assert_eq!(counts, vec![("imap".to_string(), 3)]);
 }
 
 #[test]
 fn counts_multiple_sources() {
     let mut s = new_store();
     s.store_items(&[
-        make_item_with_source("a", "social"),
-        make_item_with_source("b", "updates"),
-        make_item_with_source("c", "social"),
-        make_item_with_source("d", "forums"),
-        make_item_with_source("e", "updates"),
-        make_item_with_source("f", "updates"),
+        make_item_with_source("a", Source::Imap),
+        make_item_with_source("b", Source::Imap),
+        make_item_with_source("c", Source::Imap),
+        make_item_with_source("d", Source::Imap),
+        make_item_with_source("e", Source::Imap),
+        make_item_with_source("f", Source::Imap),
     ])
     .unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
-    assert_eq!(
-        counts,
-        vec![
-            ("forums".to_string(), 1),
-            ("social".to_string(), 2),
-            ("updates".to_string(), 3),
-        ]
-    );
+    assert_eq!(counts, vec![("imap".to_string(), 6)]);
 }
 
 #[test]
 fn counts_across_multiple_store_calls() {
     let mut s = new_store();
-    s.store_items(&[make_item_with_source("a", "social")])
+    s.store_items(&[make_item_with_source("a", Source::Imap)])
         .unwrap();
-    s.store_items(&[make_item_with_source("b", "updates")])
+    s.store_items(&[make_item_with_source("b", Source::Imap)])
         .unwrap();
-    s.store_items(&[make_item_with_source("c", "social")])
+    s.store_items(&[make_item_with_source("c", Source::Imap)])
         .unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
-    assert_eq!(
-        counts,
-        vec![("social".to_string(), 2), ("updates".to_string(), 1),]
-    );
+    assert_eq!(counts, vec![("imap".to_string(), 3)]);
 }
 
 #[test]
 fn counts_empty_after_clear() {
     let mut s = new_store();
     s.store_items(&[
-        make_item_with_source("a", "social"),
-        make_item_with_source("b", "updates"),
+        make_item_with_source("a", Source::Imap),
+        make_item_with_source("b", Source::Imap),
     ])
     .unwrap();
 
@@ -188,19 +179,19 @@ fn counts_empty_after_clear() {
 #[test]
 fn counts_dedup_does_not_affect_counts() {
     let mut s = new_store();
-    let mut item = make_item_with_source("x", "social");
+    let mut item = make_item_with_source("x", Source::Imap);
     item.title = "original".into();
     s.store_items(&[item]).unwrap();
 
     let dup = Item {
-        source: "updates".into(),
-        ..make_item_with_source("x", "social")
+        source: Source::Imap,
+        ..make_item_with_source("x", Source::Imap)
     };
     s.store_items(&[dup]).unwrap();
 
     let counts = s.get_item_counts_by_source().unwrap();
 
-    assert_eq!(counts, vec![("social".to_string(), 1)]);
+    assert_eq!(counts, vec![("imap".to_string(), 1)]);
 }
 
 #[test]

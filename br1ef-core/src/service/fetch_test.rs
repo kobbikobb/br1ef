@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use super::*;
+use crate::Source;
 use crate::fetcher::Fetcher;
 use crate::fetcher::mock::MockFetcher;
 use crate::storage::InMemoryStorage;
@@ -32,7 +33,7 @@ fn item(id: &str, title: &str) -> Item {
         title: title.into(),
         from: "alice@example.com".into(),
         body: "body".into(),
-        source: "imap".into(),
+        source: Source::Imap,
         mailbox: "".into(),
         urgent: false,
     }
@@ -47,7 +48,7 @@ fn fetch_items_defaults_to_inbox_when_no_mailboxes_configured() {
             title: "Hello".into(),
             from: "alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         }],
@@ -129,7 +130,7 @@ fn fetch_items_deduplicates_across_mailboxes() {
             title: "Meeting".into(),
             from: "boss@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         }],
@@ -176,7 +177,7 @@ fn fetch_items_stores_to_storage() {
             title: "Saved".into(),
             from: "alice@example.com".into(),
             body: "body".into(),
-            source: "imap".into(),
+            source: Source::Imap,
             mailbox: "".into(),
             urgent: false,
         }],

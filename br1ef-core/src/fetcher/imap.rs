@@ -132,7 +132,7 @@ pub fn fetch_imap(
             title: subject,
             from,
             body: body_text,
-            source: "imap".into(),
+            source: crate::Source::Imap,
             mailbox: String::new(),
             urgent: false,
         });

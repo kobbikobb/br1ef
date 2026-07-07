@@ -6,7 +6,7 @@ use chrono::Utc;
 use crate::agent::Agent;
 use crate::storage::Storage;
 
-use crate::{Digest, Item};
+use crate::{Digest, Item, Source};
 
 const REPLY_PREFIXES: &[&str] = &[
     "re:", "fwd:", "fw:", "aw:", "vs:", "sv:", "vid:", "antw:", "wg:",
@@ -81,12 +81,15 @@ pub fn build_digest(items: Vec<Item>, agent: &dyn Agent) -> Result<Digest> {
         agent.summarize_items(&relevant)?
     };
 
-    let mut by_source: HashMap<String, usize> = HashMap::new();
+    let mut by_source: HashMap<Source, usize> = HashMap::new();
     for item in &items {
         *by_source.entry(item.source.clone()).or_default() += 1;
     }
 
-    let mut by_source_vec: Vec<_> = by_source.into_iter().collect();
+    let mut by_source_vec: Vec<_> = by_source
+        .into_iter()
+        .map(|(s, c)| (s.to_string(), c))
+        .collect();
     by_source_vec.sort_by_key(|(_, count)| std::cmp::Reverse(*count));
 
     Ok(Digest {
