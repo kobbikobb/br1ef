@@ -4,7 +4,7 @@ const REPLY_PREFIXES: &[&str] = &[
     "re:", "fwd:", "fw:", "aw:", "vs:", "sv:", "vid:", "antw:", "wg:",
 ];
 
-pub fn normalize_subject(subject: &str) -> String {
+fn normalize_subject(subject: &str) -> String {
     let mut s = subject.trim();
     loop {
         let lower = s.to_lowercase();
@@ -28,7 +28,7 @@ pub fn normalize_subject(subject: &str) -> String {
     }
 }
 
-pub fn dedup_threads(items: Vec<Item>) -> Vec<Item> {
+pub(super) fn dedup_threads(items: Vec<Item>) -> Vec<Item> {
     let mut seen: std::collections::HashMap<(String, String), Item> =
         std::collections::HashMap::new();
     let mut order: Vec<(String, String)> = Vec::new();

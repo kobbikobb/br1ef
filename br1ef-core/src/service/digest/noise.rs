@@ -1,6 +1,6 @@
 use crate::Item;
 
-pub fn is_noise(item: &Item) -> bool {
+fn is_noise(item: &Item) -> bool {
     let from_lower = item.from.to_lowercase();
     let title_lower = item.title.to_lowercase();
 
@@ -12,7 +12,7 @@ pub fn is_noise(item: &Item) -> bool {
         || from_lower.contains("noreply")
 }
 
-pub fn filter_relevant(items: &[Item]) -> Vec<Item> {
+pub(super) fn filter_relevant(items: &[Item]) -> Vec<Item> {
     items.iter().filter(|i| !is_noise(i)).cloned().collect()
 }
 
