@@ -4,6 +4,8 @@ use serde::Deserialize;
 use crate::Item;
 use crate::agent::Agent;
 
+const MAX_ITEMS: usize = 30;
+
 #[derive(Deserialize)]
 struct ListResponse {
     models: Vec<ModelEntry>,
@@ -73,8 +75,9 @@ impl Agent for OllamaAgent {
 }
 
 fn build_prompt(items: &[Item]) -> String {
+    let capped = &items[..items.len().min(MAX_ITEMS)];
     let mut email_list = String::new();
-    for (i, item) in items.iter().enumerate() {
+    for (i, item) in capped.iter().enumerate() {
         use std::fmt::Write;
         let _ = write!(
             email_list,

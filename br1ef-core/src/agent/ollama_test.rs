@@ -68,6 +68,27 @@ fn build_prompt_contains_hallucination_guardrail() {
 }
 
 #[test]
+fn build_prompt_caps_at_max_items() {
+    let items: Vec<Item> = (0..35)
+        .map(|i| make_item(&i.to_string(), "a@a.com", "Subj", "Body"))
+        .collect();
+    let prompt = build_prompt(&items);
+
+    assert!(prompt.contains("30. From:"));
+    assert!(!prompt.contains("31. From:"));
+}
+
+#[test]
+fn build_prompt_no_cap_when_under_limit() {
+    let items: Vec<Item> = (0..25)
+        .map(|i| make_item(&i.to_string(), "a@a.com", "Subj", "Body"))
+        .collect();
+    let prompt = build_prompt(&items);
+
+    assert!(prompt.contains("25. From:"));
+}
+
+#[test]
 fn truncate_short_string() {
     assert_eq!(truncate("hello", 10), "hello");
 }
