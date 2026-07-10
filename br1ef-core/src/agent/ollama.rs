@@ -90,15 +90,15 @@ fn build_prompts(items: &[Item]) -> (String, String, usize) {
     let today = chrono::Utc::now().format("%B %-e, %Y");
 
     let system = "\
-        Only use the information from these emails — do not add anything\n\
-        not present in the emails above.\n\n\
-        No section headers or categories.";
+        You are an email digest assistant. Summarize emails into a concise daily brief. \
+        Only use information present in the emails — never add external knowledge. \
+        No section headers or categories. Output plain text, no markdown formatting.";
 
     let user = format!(
         "Today is {today}. Below are emails from the last week.\n\n\
          {email_list}\
-         List personal messages and action items concisely. Skip commercial\n\
-         emails, newsletters, and LinkedIn notifications. Under 150 words.",
+         List personal messages and action items concisely. \
+         Under 150 words.",
     );
 
     (system.to_string(), user, items.len())
