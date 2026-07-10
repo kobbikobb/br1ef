@@ -4,6 +4,9 @@ use serde::Deserialize;
 use crate::Item;
 use crate::agent::Agent;
 
+const MAX_ITEMS: usize = 30;
+const BODY_MAX_CHARS: usize = 2000;
+
 #[derive(Deserialize)]
 struct ListResponse {
     models: Vec<ModelEntry>,
@@ -47,7 +50,7 @@ impl OllamaAgent {
 
 impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
-        let prompt = build_prompt(items);
+        let (system, prompt) = build_prompts(items);
 
         crate::progress::with_progress(&format!("Digesting {} emails...", items.len()), || {
             #[derive(Deserialize)]
@@ -57,6 +60,7 @@ impl Agent for OllamaAgent {
 
             let body = serde_json::json!({
                 "model": self.model,
+                "system": system,
                 "prompt": prompt,
                 "stream": false,
             });
@@ -72,9 +76,11 @@ impl Agent for OllamaAgent {
     }
 }
 
-fn build_prompt(items: &[Item]) -> String {
+fn build_prompts(items: &[Item]) -> (String, String) {
+    let capped = &items[..items.len().min(MAX_ITEMS)];
+
     let mut email_list = String::new();
-    for (i, item) in items.iter().enumerate() {
+    for (i, item) in capped.iter().enumerate() {
         use std::fmt::Write;
         let _ = write!(
             email_list,
@@ -82,21 +88,25 @@ fn build_prompt(items: &[Item]) -> String {
             i + 1,
             item.from,
             item.title,
-            truncate(&item.body, 500),
+            truncate(&item.body, BODY_MAX_CHARS),
         );
     }
 
     let today = chrono::Utc::now().format("%B %-e, %Y");
 
-    format!(
+    let system = "\
+        You are an email digest assistant. Summarize emails into a concise daily brief. \
+        Only use information present in the emails — never add external knowledge. \
+        Output plain text, no markdown formatting.";
+
+    let user = format!(
         "Today is {today}. Below are emails from the last week.\n\n\
          {email_list}\
-         Only use the information from these emails — do not add anything\n\
-         not present in the emails above.\n\n\
-         List personal messages and action items concisely. Skip commercial\n\
-         emails, newsletters, and LinkedIn notifications. No section headers\n\
-         or categories. Under 150 words.",
-    )
+         List personal messages and action items concisely. \
+         Under 150 words.",
+    );
+
+    (system.to_string(), user)
 }
 
 fn truncate(s: &str, max: usize) -> &str {
