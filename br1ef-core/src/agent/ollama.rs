@@ -47,9 +47,9 @@ impl OllamaAgent {
 
 impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
-        let prompt = build_prompt(items);
+        let (system, prompt, count) = build_prompts(items);
 
-        crate::progress::with_progress(&format!("Digesting {} emails...", items.len()), || {
+        crate::progress::with_progress(&format!("Digesting {count} emails..."), || {
             #[derive(Deserialize)]
             struct GenerateResponse {
                 response: String,
@@ -57,6 +57,7 @@ impl Agent for OllamaAgent {
 
             let body = serde_json::json!({
                 "model": self.model,
+                "system": system,
                 "prompt": prompt,
                 "stream": false,
             });
@@ -72,7 +73,7 @@ impl Agent for OllamaAgent {
     }
 }
 
-fn build_prompt(items: &[Item]) -> String {
+fn build_prompts(items: &[Item]) -> (String, String, usize) {
     let mut email_list = String::new();
     for (i, item) in items.iter().enumerate() {
         use std::fmt::Write;
@@ -88,15 +89,19 @@ fn build_prompt(items: &[Item]) -> String {
 
     let today = chrono::Utc::now().format("%B %-e, %Y");
 
-    format!(
+    let system = "\
+        Only use the information from these emails — do not add anything\n\
+        not present in the emails above.\n\n\
+        No section headers or categories.";
+
+    let user = format!(
         "Today is {today}. Below are emails from the last week.\n\n\
          {email_list}\
-         Only use the information from these emails — do not add anything\n\
-         not present in the emails above.\n\n\
          List personal messages and action items concisely. Skip commercial\n\
-         emails, newsletters, and LinkedIn notifications. No section headers\n\
-         or categories. Under 150 words.",
-    )
+         emails, newsletters, and LinkedIn notifications. Under 150 words.",
+    );
+
+    (system.to_string(), user, items.len())
 }
 
 fn truncate(s: &str, max: usize) -> &str {
