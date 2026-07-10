@@ -67,8 +67,8 @@ fn build_prompts_no_section_headers() {
 fn build_prompts_contains_hallucination_guardrail() {
     let item = make_item("1", "a@a.com", "Test", "Body");
     let (system, _user, _count) = build_prompts(&[item]);
-    assert!(system.contains("Only use the information from these emails"));
-    assert!(system.contains("do not add anything"));
+    assert!(system.contains("Only use information present in the emails"));
+    assert!(system.contains("never add external knowledge"));
 }
 
 #[test]
@@ -76,9 +76,9 @@ fn build_prompts_system_separates_role_from_content() {
     let item = make_item("1", "a@a.com", "Test", "Body");
     let (system, user, _count) = build_prompts(&[item]);
 
-    assert!(system.contains("Only use the information"));
+    assert!(system.contains("email digest assistant"));
     assert!(user.contains("a@a.com"));
-    assert!(!user.contains("Only use the information"));
+    assert!(!user.contains("email digest assistant"));
 }
 
 #[test]
