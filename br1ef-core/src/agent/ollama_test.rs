@@ -17,8 +17,9 @@ fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
 
 #[test]
 fn build_prompts_empty_items() {
-    let (system, user) = build_prompts(&[]);
+    let (system, user, count) = build_prompts(&[]);
 
+    assert_eq!(count, 0);
     assert!(!system.is_empty());
     assert!(user.contains("Today is"));
     assert!(user.contains("Below are emails from the last week"));
@@ -28,8 +29,9 @@ fn build_prompts_empty_items() {
 #[test]
 fn build_prompts_single_item() {
     let item = make_item("1", "alice@example.com", "Hello", "How are you?");
-    let (_system, user) = build_prompts(&[item]);
+    let (_system, user, count) = build_prompts(&[item]);
 
+    assert_eq!(count, 1);
     assert!(user.contains("alice@example.com"));
     assert!(user.contains("Hello"));
     assert!(user.contains("How are you?"));
@@ -42,8 +44,9 @@ fn build_prompts_multiple_items_numbered() {
         make_item("1", "a@a.com", "Subj A", "Body A"),
         make_item("2", "b@b.com", "Subj B", "Body B"),
     ];
-    let (_system, user) = build_prompts(&items);
+    let (_system, user, count) = build_prompts(&items);
 
+    assert_eq!(count, 2);
     assert!(user.contains("1. From:"));
     assert!(user.contains("2. From:"));
     assert!(user.contains("Subj A"));
@@ -53,7 +56,7 @@ fn build_prompts_multiple_items_numbered() {
 #[test]
 fn build_prompts_no_section_headers() {
     let item = make_item("1", "a@a.com", "Test", "Body");
-    let (_system, user) = build_prompts(&[item]);
+    let (_system, user, _count) = build_prompts(&[item]);
 
     assert!(!user.contains("Personal & Action Required"));
     assert!(!user.contains("Everything Else"));
@@ -63,7 +66,7 @@ fn build_prompts_no_section_headers() {
 #[test]
 fn build_prompts_contains_hallucination_guardrail() {
     let item = make_item("1", "a@a.com", "Test", "Body");
-    let (system, _user) = build_prompts(&[item]);
+    let (system, _user, _count) = build_prompts(&[item]);
     assert!(system.contains("Only use information present in the emails"));
     assert!(system.contains("never add external knowledge"));
 }
@@ -71,11 +74,40 @@ fn build_prompts_contains_hallucination_guardrail() {
 #[test]
 fn build_prompts_system_separates_role_from_content() {
     let item = make_item("1", "a@a.com", "Test", "Body");
-    let (system, user) = build_prompts(&[item]);
+    let (system, user, _count) = build_prompts(&[item]);
 
     assert!(system.contains("email digest assistant"));
     assert!(user.contains("a@a.com"));
     assert!(!user.contains("email digest assistant"));
+}
+
+#[test]
+fn build_prompts_system_disallows_section_headers() {
+    let item = make_item("1", "a@a.com", "Test", "Body");
+    let (system, _user, _count) = build_prompts(&[item]);
+    assert!(system.contains("No section headers or categories"));
+}
+
+#[test]
+fn build_prompts_caps_at_max_items() {
+    let items: Vec<Item> = (0..35)
+        .map(|i| make_item(&i.to_string(), "a@a.com", "Subj", "Body"))
+        .collect();
+    let (_system, user, count) = build_prompts(&items);
+
+    assert_eq!(count, 30);
+    assert!(user.contains("30. From:"));
+    assert!(!user.contains("31. From:"));
+}
+
+#[test]
+fn build_prompts_no_cap_when_under_limit() {
+    let items: Vec<Item> = (0..25)
+        .map(|i| make_item(&i.to_string(), "a@a.com", "Subj", "Body"))
+        .collect();
+    let (_system, _user, count) = build_prompts(&items);
+
+    assert_eq!(count, 25);
 }
 
 #[test]

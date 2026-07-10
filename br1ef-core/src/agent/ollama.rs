@@ -50,9 +50,9 @@ impl OllamaAgent {
 
 impl Agent for OllamaAgent {
     fn summarize_items(&self, items: &[Item]) -> Result<String> {
-        let (system, prompt) = build_prompts(items);
+        let (system, prompt, count) = build_prompts(items);
 
-        crate::progress::with_progress(&format!("Digesting {} emails...", items.len()), || {
+        crate::progress::with_progress(&format!("Digesting {count} emails..."), || {
             #[derive(Deserialize)]
             struct GenerateResponse {
                 response: String,
@@ -76,8 +76,9 @@ impl Agent for OllamaAgent {
     }
 }
 
-fn build_prompts(items: &[Item]) -> (String, String) {
+fn build_prompts(items: &[Item]) -> (String, String, usize) {
     let capped = &items[..items.len().min(MAX_ITEMS)];
+    let count = capped.len();
 
     let mut email_list = String::new();
     for (i, item) in capped.iter().enumerate() {
@@ -97,7 +98,7 @@ fn build_prompts(items: &[Item]) -> (String, String) {
     let system = "\
         You are an email digest assistant. Summarize emails into a concise daily brief. \
         Only use information present in the emails — never add external knowledge. \
-        Output plain text, no markdown formatting.";
+        No section headers or categories. Output plain text, no markdown formatting.";
 
     let user = format!(
         "Today is {today}. Below are emails from the last week.\n\n\
@@ -106,7 +107,7 @@ fn build_prompts(items: &[Item]) -> (String, String) {
          Under 150 words.",
     );
 
-    (system.to_string(), user)
+    (system.to_string(), user, count)
 }
 
 fn truncate(s: &str, max: usize) -> &str {
