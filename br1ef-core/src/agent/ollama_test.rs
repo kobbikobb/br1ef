@@ -1,7 +1,7 @@
 use crate::Item;
 use crate::Source;
 
-use super::{build_prompt, parse_list_response, truncate};
+use super::{build_prompts, parse_list_response, truncate};
 
 fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
     Item {
@@ -16,55 +16,76 @@ fn make_item(id: &str, from: &str, title: &str, body: &str) -> Item {
 }
 
 #[test]
-fn build_prompt_empty_items() {
-    let prompt = build_prompt(&[]);
+fn build_prompts_empty_items() {
+    let (system, user, count) = build_prompts(&[]);
 
-    assert!(prompt.contains("Today is"));
-    assert!(prompt.contains("Below are emails from the last week"));
-    assert!(prompt.contains("List personal messages and action items"));
+    assert_eq!(count, 0);
+    assert!(!system.is_empty());
+    assert!(user.contains("Today is"));
+    assert!(user.contains("Below are emails from the last week"));
+    assert!(user.contains("List personal messages and action items"));
 }
 
 #[test]
-fn build_prompt_single_item() {
+fn build_prompts_single_item() {
     let item = make_item("1", "alice@example.com", "Hello", "How are you?");
-    let prompt = build_prompt(&[item]);
+    let (_system, user, count) = build_prompts(&[item]);
 
-    assert!(prompt.contains("alice@example.com"));
-    assert!(prompt.contains("Hello"));
-    assert!(prompt.contains("How are you?"));
-    assert!(prompt.contains("1. From:"));
+    assert_eq!(count, 1);
+    assert!(user.contains("alice@example.com"));
+    assert!(user.contains("Hello"));
+    assert!(user.contains("How are you?"));
+    assert!(user.contains("1. From:"));
 }
 
 #[test]
-fn build_prompt_multiple_items_numbered() {
+fn build_prompts_multiple_items_numbered() {
     let items = vec![
         make_item("1", "a@a.com", "Subj A", "Body A"),
         make_item("2", "b@b.com", "Subj B", "Body B"),
     ];
-    let prompt = build_prompt(&items);
+    let (_system, user, count) = build_prompts(&items);
 
-    assert!(prompt.contains("1. From:"));
-    assert!(prompt.contains("2. From:"));
-    assert!(prompt.contains("Subj A"));
-    assert!(prompt.contains("Body B"));
+    assert_eq!(count, 2);
+    assert!(user.contains("1. From:"));
+    assert!(user.contains("2. From:"));
+    assert!(user.contains("Subj A"));
+    assert!(user.contains("Body B"));
 }
 
 #[test]
-fn build_prompt_no_section_headers() {
+fn build_prompts_no_section_headers() {
     let item = make_item("1", "a@a.com", "Test", "Body");
-    let prompt = build_prompt(&[item]);
+    let (_system, user, _count) = build_prompts(&[item]);
 
-    assert!(!prompt.contains("Personal & Action Required"));
-    assert!(!prompt.contains("Everything Else"));
-    assert!(!prompt.contains("##"));
+    assert!(!user.contains("Personal & Action Required"));
+    assert!(!user.contains("Everything Else"));
+    assert!(!user.contains("##"));
 }
 
 #[test]
-fn build_prompt_contains_hallucination_guardrail() {
+fn build_prompts_contains_hallucination_guardrail() {
     let item = make_item("1", "a@a.com", "Test", "Body");
-    let prompt = build_prompt(&[item]);
-    assert!(prompt.contains("Only use the information from these emails"));
-    assert!(prompt.contains("do not add anything"));
+    let (system, _user, _count) = build_prompts(&[item]);
+    assert!(system.contains("Only use information present in the emails"));
+    assert!(system.contains("never add external knowledge"));
+}
+
+#[test]
+fn build_prompts_system_separates_role_from_content() {
+    let item = make_item("1", "a@a.com", "Test", "Body");
+    let (system, user, _count) = build_prompts(&[item]);
+
+    assert!(system.contains("email digest assistant"));
+    assert!(user.contains("a@a.com"));
+    assert!(!user.contains("email digest assistant"));
+}
+
+#[test]
+fn build_prompts_system_disallows_section_headers() {
+    let item = make_item("1", "a@a.com", "Test", "Body");
+    let (system, _user, _count) = build_prompts(&[item]);
+    assert!(system.contains("No section headers or categories"));
 }
 
 #[test]
