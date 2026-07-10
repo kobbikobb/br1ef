@@ -46,5 +46,5 @@ all: check ## Run check target
 
 check: build lint fmt audit test ## Build + lint + fmt + audit + test
 
-do-it-lady: fetch digest daily ## Quick pipeline: fetch → digest → daily (quiet)
+do-it-lady: ## Quick pipeline: fetch → digest → daily (quiet)
 	cargo run -q fetch && cargo run -q digest && cargo run -q daily
