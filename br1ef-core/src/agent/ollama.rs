@@ -83,7 +83,7 @@ fn build_prompts(items: &[Item]) -> (String, String, usize) {
             i + 1,
             item.from,
             item.title,
-            truncate(&item.body, 500),
+            truncate(&item.body, 2000),
         );
     }
 
